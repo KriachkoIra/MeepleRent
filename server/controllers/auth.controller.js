@@ -71,6 +71,13 @@ const loginUser = async function (req, res) {
   } catch (err) {}
 };
 
+const logoutUser = function (req, res) {
+  res.clearCookie("token");
+  req.session = null;
+  req.session?.destroy();
+  return res.json({ logout: true });
+};
+
 const verifyUser = async function (req, res) {
   try {
     const token = req.cookies?.token;
@@ -95,4 +102,4 @@ const verifyUser = async function (req, res) {
   }
 };
 
-export { registerUser, loginUser, verifyUser };
+export { registerUser, loginUser, logoutUser, verifyUser };

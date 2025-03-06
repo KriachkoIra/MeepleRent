@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Madimi+One&family=Merienda:wght@300..900&display=swap");
+
+.logo {
+  font-family: "Madimi One", "Merienda", monospace;
+}
+
+.register-picture {
+  background-image: url("./assets/register.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.bg-my {
+  background-color: #f7f9ef;
+}
