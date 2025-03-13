@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 
 import authRouter from "./routes/auth.js";
+import gamesRouter from "./routes/games.js";
 
 dotenv.config();
 const app = express();
@@ -26,5 +27,6 @@ const PORT = process.env.PORT || 3001;
 mongoose.connect("mongodb://127.0.0.1:27017/meepleRentDB");
 
 app.use("/auth", authRouter);
+app.use("/games", gamesRouter);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
