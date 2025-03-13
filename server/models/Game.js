@@ -9,6 +9,7 @@ const GameSchema = new mongoose.Schema({
   minPlayers: Number,
   maxPlayers: Number,
   isAvailable: Boolean,
+  price: Number,
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
