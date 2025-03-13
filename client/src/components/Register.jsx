@@ -14,7 +14,8 @@ export default function Register() {
   const registerUser = async (e) => {
     e.preventDefault();
 
-    const link = isRegister ? "/auth/register" : "/auth/login";
+    const link = `http://localhost:3001${isRegister ? "/auth/register" : "/auth/login"}`;
+
 
     await axios
       .post(link, { email, username, password })
@@ -22,10 +23,14 @@ export default function Register() {
         setEmail(res.data.email);
         setUsername(res.data.username);
       })
-      .catch((err) => {
-        setAlert(err.response.data.message);
-        console.log(err);
-      });
+        .catch((err) => {
+          if (err.response && err.response.data) {
+            setAlert(err.response.data.message);
+          } else {
+            setAlert('Помилка з підключенням до сервера');
+          }
+          console.log(err);
+        });
   };
 
   return (
