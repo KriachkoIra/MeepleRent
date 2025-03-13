@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 
 import authRouter from "./routes/auth.js";
 import gamesRouter from "./routes/games.js";
+import usersRouter from "./routes/users.js";
 
 dotenv.config();
 const app = express();
@@ -28,5 +29,6 @@ mongoose.connect("mongodb://127.0.0.1:27017/meepleRentDB");
 
 app.use("/auth", authRouter);
 app.use("/games", gamesRouter);
+app.use("/users", usersRouter);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
