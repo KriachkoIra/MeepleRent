@@ -1,10 +1,14 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useEffect, lazy } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import axios from "axios";
-import Register from "./components/Register.jsx";
-import Homepage from "./components/Homepage.jsx";
-import UserPage from "./components/UserPage.jsx";
 import { UserContext } from "./context/UserContext.jsx";
+
+const Register = lazy(() => import("./components/Register.jsx"));
+const Homepage = lazy(() => import("./components/Homepage.jsx"));
+const UserPage = lazy(() => import("./components/UserPage.jsx"));
+const ProfileMyGames = lazy(() => import("./components/ProfileMyGames.jsx"));
+const ProfileMyReservations = lazy(() => import("./components/ProfileMyReservations.jsx"));
+const RouteNotFound = lazy(() => import("./components/RouteNotFound.jsx"));
 
 function App() {
   // Set up base URL for axios requests
@@ -35,33 +39,37 @@ function App() {
       });
   }, [setUsername, setEmail, setId, setAvatar]);
 
-  // Function to handle the "User Page" button click
-  const handleUserPageClick = () => {
-    setShowUserPage(true);
-  };
+  // // Function to handle the "User Page" button click
+  // const handleUserPageClick = () => {
+  //   setShowUserPage(true);
+  // };
 
-  // Handle logout
-  const handleLogout = () => {
-    axios
-      .post("/auth/logout")
-      .then(() => {
-        setUsername(null);
-        setEmail(null);
-        setId(null);
-        setAvatar(null);
-        setShowUserPage(false);
-      })
-      .catch((err) => {
-        console.error("Error logging out:", err);
-      });
-  };
+  // // Handle logout
+  // const handleLogout = () => {
+  //   axios
+  //     .post("/auth/logout")
+  //     .then(() => {
+  //       setUsername(null);
+  //       setEmail(null);
+  //       setId(null);
+  //       setAvatar(null);
+  //       setShowUserPage(false);
+  //     })
+  //     .catch((err) => {
+  //       console.error("Error logging out:", err);
+  //     });
+  // };
 
   if (username) {
     return (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Homepage />} />
-          <Route path="/profile" element={<UserPage />} />
+          <Route element={<UserPage />} >
+              <Route default path={"/profile"} element={<ProfileMyGames />} />
+              <Route path={"/profile/my-reservations"} element={<ProfileMyReservations />} />
+          </Route>
+          <Route path="*" element={<RouteNotFound />} />
         </Routes>
       </BrowserRouter>
     );

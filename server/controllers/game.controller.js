@@ -59,6 +59,7 @@ const addGame = async function (req, res) {
   try {
     const { name, description, time, difficulty, minPlayers, maxPlayers, price } =
         req.body;
+        console.log(req);
     const owner = getUserId(req);
 
     if (!owner)

@@ -54,3 +54,20 @@ button {
 button:hover {
   background-color: #e53935;
 }
+
+.button--outline {
+  padding: 10px 20px;
+  border: solid #f44336 3px;
+  background-color: white;
+  color: #f44336;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.button--disabled {
+  cursor: default;
+}
+
+.button--disabled:hover {
+  background-color: white;
+}

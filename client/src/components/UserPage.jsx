@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext.jsx";
-import axios from "axios";
+import { Outlet } from "react-router-dom";
 
 export default function UserPage({ handleLogout }) {
     const { username, email, avatar } = useContext(UserContext);
@@ -11,30 +11,10 @@ export default function UserPage({ handleLogout }) {
         alert("Збережено!");
     };
 
-    const cards = [
-        {
-            title: "Шахи",
-            description: " Класична стратегічна гра, де вам потрібно продумати кожен хід, щоб перемогти супротивника. ",
-            rating: 4.5,
-        },
-        {
-            title: "Карти: Покер",
-            description:
-                "Створіть стратегію, вгадуйте ходи супротивників та вигравайте великі ставки, ставши королем покеру.",
-            rating: 3.8,
-        },
-        {
-            title: "Монополія 3",
-            description:
-                "Приймайте розумні рішення і станьте найбагатшою особою на ігровому полі, перемігши всіх своїх суперників!",
-            rating: 4.2,
-        },
-    ];
-
     return (
-        <div className="h-screen bg-gray-50 flex items-center justify-center space-x-6">
+        <div className="min-h-screen bg-gray-50 flex items-start py-20 px-8 justify-center space-x-6">
             {/* Left Section (User Information) */}
-            <div className="w-1/2 bg-white rounded-xl shadow-lg p-8 space-y-6">
+            <div className="w-1/3 bg-white rounded-xl shadow-lg p-8 space-y-6">
                 <div className="flex justify-center">
                     {avatar ? (
                         <img
@@ -84,31 +64,8 @@ export default function UserPage({ handleLogout }) {
             </div>
 
             {/* Right Section (Games, Bookings) */}
-            <div className=" h-1/2 w-1/2 bg-white rounded-xl shadow-lg p-15 space-y-12 flex flex-col items-center">
-                <div className="flex w-full space-x-50">
-                    <button
-                        onClick={() => alert("My Games functionality here")}
-                        className="w-1/2 bg-orange-500 text-white py-4 rounded-lg hover:bg-orange-600 transition-colors shadow-md text-lg">
-                        Мої ігри
-                    </button>
-                    <button
-                        onClick={() => alert("My Booked Games functionality here")}
-                        className="w-1/2 text-orange-500 py-4 rounded-lg border-2 border-orange-500 hover:bg-orange-500 hover:text-white transition-colors shadow-md text-lg">
-                        Мої бронювання
-                    </button>
-                </div>
-                <div className="flex justify-center space-x-6 ">
-                    {cards.map((card, index) => (
-                        <div key={index} className="w-1/3 bg-white rounded-lg shadow-lg p-6 space-y-4">
-                            <h3 className="text-xl font-semibold text-gray-800">{card.title}</h3>
-                            <p className="text-gray-600">{card.description}</p>
-                            <div className="flex items-center space-x-2">
-                                <span className="text-yellow-500 font-bold">{card.rating}</span>
-                                <span className="text-gray-400">/ 5</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+            <div className=" w-2/3 bg-white rounded-xl shadow-lg p-15 space-y-12 flex flex-col items-center">
+                <Outlet/>
             </div>
         </div>
     );
