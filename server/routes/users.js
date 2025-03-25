@@ -6,28 +6,25 @@ import {
   updateUser,
   deleteUser,
 } from "../controllers/user.controller.js";
+import upload from "../middleware/multer.js";
 
 const router = express.Router();
 
 router
-  .route("/:id")
-  .get(getUser, getUserWithGames)
-  .patch(getUser, updateUser)
-  .delete(getUser, deleteUser);
+    .route("/:id")
+    .get(getUser, getUserWithGames)
+    .patch(getUser, upload.single("avatar"), updateUser)
+    .delete(getUser, deleteUser);
 
 async function getUser(req, res, next) {
   let user;
-
   try {
     user = await User.findById(req.params.id);
-    if (user == null) {
-      return res.status(404).json({ message: "Couldn't find user." });
-    }
+    if (user == null) return res.status(404).json({ message: "Couldn't find user." });
     res.user = user;
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
-
   next();
 }
 
