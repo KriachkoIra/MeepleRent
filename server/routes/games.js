@@ -4,7 +4,7 @@ import {
   getGames,
   addGame,
   deleteGame,
-  updateGame,
+  updateGame, checkAvailability,
 } from "../controllers/game.controller.js";
 import Game from "../models/Game.js";
 import upload from "../middleware/multer.js";
@@ -12,6 +12,7 @@ import upload from "../middleware/multer.js";
 const router = express.Router();
 
 router.route("/").get(getGames).post(upload.single("image"), addGame);
+router.route("/:id/availability").get(checkAvailability);
 
 router
     .route("/:id")

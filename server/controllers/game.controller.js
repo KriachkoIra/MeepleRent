@@ -62,7 +62,7 @@ const addGame = async function (req, res) {
 
     if (!owner) return res.status(401).json({ error: "Needs user authorization." });
 
-    let imageUrl = "https://via.placeholder.com/300"; // Default image
+    let imageUrl = "https://res.cloudinary.com/duwmrfgn6/image/upload/v1742931468/meepleRent/games/vphy5x365vnkrkkt3m3k.jpg";
     if (req.file) {
       const result = await new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(
@@ -73,7 +73,7 @@ const addGame = async function (req, res) {
             }
         ).end(req.file.buffer);
       });
-      imageUrl = result.secure_url; // Save Cloudinary URL
+      imageUrl = result.secure_url;
     } else {
       console.log("No file uploaded, using default image");
     }
@@ -107,13 +107,12 @@ const updateGame = async function (req, res) {
     if (game.owner._id.toString() !== userId)
       return res.status(401).json({ error: "User is not the owner of this game." });
 
-    // Handle game image update
     if (req.file) {
       const result = await cloudinary.uploader.upload_stream(
           { folder: "meepleRent/games" },
           (error, result) => {
             if (error) throw error;
-            game.image = result.secure_url; // Update with new Cloudinary URL
+            game.image = result.secure_url;
           }
       ).end(req.file.buffer);
     }
@@ -133,4 +132,16 @@ const updateGame = async function (req, res) {
   }
 };
 
-export { getGames, addGame, deleteGame, updateGame };
+const checkAvailability = async (req, res) => {
+  try {
+    const gameId = req.params.id;
+    const bookings = await Booking.find({
+      game: gameId,
+      status: { $in: ["pending", "confirmed"] },
+    });
+    return res.json({ bookings, isAvailable: bookings.length === 0 });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+export { getGames, addGame, deleteGame, updateGame, checkAvailability };

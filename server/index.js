@@ -10,7 +10,8 @@ import bodyParser from "body-parser";
 import authRouter from "./routes/auth.js";
 import gamesRouter from "./routes/games.js";
 import usersRouter from "./routes/users.js";
-import { configureCloudinary } from "./cloudinary.js"; // Import the configure function
+import bookingsRouter from "./routes/bookings.js";
+import { configureCloudinary } from "./cloudinary.js";
 
 configureCloudinary();
 
@@ -34,5 +35,6 @@ mongoose.connect("mongodb://127.0.0.1:27017/meepleRentDB");
 app.use("/auth", authRouter);
 app.use("/games", gamesRouter);
 app.use("/users", usersRouter);
+app.use("/bookings", bookingsRouter);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
