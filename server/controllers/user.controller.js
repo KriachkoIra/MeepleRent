@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import Game from "../models/Game.js";
 import jwt from "jsonwebtoken";
+import { cloudinary } from "../cloudinary.js";
 
 const getUserId = function (req) {
   const token = req.cookies?.token;
@@ -24,19 +25,29 @@ const getUserWithGames = async function (req, res) {
 const updateUser = async function (req, res) {
   try {
     const user = res.user;
-
     if (!user) return res.status(401).json({ error: "User not found." });
 
     const userId = getUserId(req);
     if (user._id.toString() !== userId)
-      return res
-        .status(401)
-        .json({ error: "User is not the owner of this account." });
+      return res.status(401).json({ error: "User is not the owner of this account." });
+
+    // Handle avatar upload
+    if (req.file) {
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+            { folder: "meepleRent/avatars" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+        ).end(req.file.buffer);
+      });
+      user.avatar = result.secure_url; // Save Cloudinary URL
+    }
 
     user.username = req.body.username || user.username;
-
     await user.save();
-    return res.json({ message: "User data updated successfully" });
+    return res.json({ message: "User data updated successfully", avatar: user.avatar });
   } catch (err) {
     return res.status(401).json({ error: err.message });
   }
