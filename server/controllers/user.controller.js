@@ -42,7 +42,7 @@ const updateUser = async function (req, res) {
             }
         ).end(req.file.buffer);
       });
-      user.avatar = result.secure_url; // Save Cloudinary URL
+      user.avatar = result.secure_url;
     }
 
     user.username = req.body.username || user.username;

@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
 
-// Export a function to configure Cloudinary
 const configureCloudinary = () => {
     cloudinary.config({
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

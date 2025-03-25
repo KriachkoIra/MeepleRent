@@ -1,4 +1,3 @@
-// models/Game.js
 import mongoose from "mongoose";
 
 const GameSchema = new mongoose.Schema({
@@ -9,7 +8,7 @@ const GameSchema = new mongoose.Schema({
   difficulty: String,
   minPlayers: Number,
   maxPlayers: Number,
-  isAvailable: Boolean,
+  isAvailable: { type: Boolean, default: true },
   price: Number,
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
