@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import axios from "axios";
 import { UserContext } from "./context/UserContext.jsx";
 import Navbar from "./components/Navbar.jsx";
+import AddGamePage from "./components/AddGamePage.jsx";
 
 const Register = lazy(() => import("./components/Register.jsx"));
 const Homepage = lazy(() => import("./components/Homepage.jsx"));
@@ -76,6 +77,7 @@ function App() {
               element={<ProfileMyReservations />}
             />
           </Route>
+          <Route path="add-game" element={<AddGamePage />} />
           <Route path="*" element={<RouteNotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,11 +1,14 @@
 import { useContext, useState } from "react";
 import { UserContext } from "../context/UserContext.jsx";
 import { Link, Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function UserPage({ handleLogout }) {
   const { username, email, avatar } = useContext(UserContext);
   const [editableUsername, setEditableUsername] = useState(username);
   const [editableEmail, setEditableEmail] = useState(email);
+
+  const navigate = useNavigate();
 
   const handleSave = () => {
     alert("Збережено!");
@@ -53,7 +56,7 @@ export default function UserPage({ handleLogout }) {
           <div className="space-y-4">
             <button
               className="w-full bg-secondary text-white py-2 rounded-lg hover:bg-orange-300 transition-colors text-lg"
-              onClick={() => alert("Add Game functionality here")}
+              onClick={() => navigate("/add-game")}
             >
               Додати гру
             </button>
