@@ -38,14 +38,14 @@ const ProfileMyReservations = () => {
   const navigate = useNavigate();
   return (
     <>
-      <div className="flex w-full space-x-20">
+      <div className="flex w-full gap-6">
         <button
           onClick={() => navigate("/profile")}
-          className="w-1/4 border-orange-500 bg-white text-white py-4 rounded-lg transition-colors shadow-md text-lg"
+          className="w-1/4 border-2 border-primary text-primary hover:bg-primary hover:text-white py-3 rounded-lg transition-colors shadow-md text-lg"
         >
           Мої ігри
         </button>
-        <button className="button--outline button--disabled  w-1/4 text-orange-500 py-4 rounded-lg border-2 border-orange-500 hover:bg-orange-500 hover:text-white transition-colors shadow-md text-lg">
+        <button className="w-1/4 text-white py-3 rounded-lg bg-primary transition-colors shadow-md text-lg">
           Мої бронювання
         </button>
       </div>
@@ -55,7 +55,10 @@ const ProfileMyReservations = () => {
             { title, picLink, price, description, ownerName, status },
             index
           ) => (
-            <div key={index} className="mb-6 bg-white rounded-lg shadow-lg p-6 w-full">
+            <div
+              key={index}
+              className="mb-6 bg-white rounded-lg shadow-lg p-6 w-full"
+            >
               <div className="flex">
                 <img src={picLink} alt="pic here" className="w-40 h-40 mr-3" />
                 <div className="flex flex-col w-full">

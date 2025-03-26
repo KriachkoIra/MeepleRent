@@ -2,12 +2,15 @@ import { useContext, useEffect, lazy } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import axios from "axios";
 import { UserContext } from "./context/UserContext.jsx";
+import Navbar from "./components/Navbar.jsx";
 
 const Register = lazy(() => import("./components/Register.jsx"));
 const Homepage = lazy(() => import("./components/Homepage.jsx"));
 const UserPage = lazy(() => import("./components/UserPage.jsx"));
 const ProfileMyGames = lazy(() => import("./components/ProfileMyGames.jsx"));
-const ProfileMyReservations = lazy(() => import("./components/ProfileMyReservations.jsx"));
+const ProfileMyReservations = lazy(() =>
+  import("./components/ProfileMyReservations.jsx")
+);
 const RouteNotFound = lazy(() => import("./components/RouteNotFound.jsx"));
 
 function App() {
@@ -63,11 +66,15 @@ function App() {
   if (username) {
     return (
       <BrowserRouter>
+        <Navbar />
         <Routes>
           <Route path="/" element={<Homepage />} />
-          <Route element={<UserPage />} >
-              <Route default path={"/profile"} element={<ProfileMyGames />} />
-              <Route path={"/profile/my-reservations"} element={<ProfileMyReservations />} />
+          <Route element={<UserPage />}>
+            <Route default path={"/profile"} element={<ProfileMyGames />} />
+            <Route
+              path={"/profile/my-reservations"}
+              element={<ProfileMyReservations />}
+            />
           </Route>
           <Route path="*" element={<RouteNotFound />} />
         </Routes>
