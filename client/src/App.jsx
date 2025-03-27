@@ -4,13 +4,14 @@ import axios from "axios";
 import { UserContext } from "./context/UserContext.jsx";
 import Navbar from "./components/Navbar.jsx";
 import AddGamePage from "./components/AddGamePage.jsx";
+import MainLayout from "./components/MainLayout.jsx";
 
 const Register = lazy(() => import("./components/Register.jsx"));
 const Homepage = lazy(() => import("./components/Homepage.jsx"));
 const UserPage = lazy(() => import("./components/UserPage.jsx"));
 const ProfileMyGames = lazy(() => import("./components/ProfileMyGames.jsx"));
-const ProfileMyReservations = lazy(() =>
-  import("./components/ProfileMyReservations.jsx")
+const ProfileMyBookings = lazy(() =>
+  import("./components/ProfileMyBookings.jsx")
 );
 const RouteNotFound = lazy(() => import("./components/RouteNotFound.jsx"));
 
@@ -45,19 +46,20 @@ function App() {
 
   if (username) {
     return (
-      <BrowserRouter>
-        <Navbar />
+      <BrowserRouter >
         <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route element={<UserPage  />}>
-            <Route default path={"/profile"} element={<ProfileMyGames />} />
-            <Route
-              path={"/profile/my-reservations"}
-              element={<ProfileMyReservations />}
-            />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Homepage />} />
+            <Route element={<UserPage />}>
+              <Route default path={"/profile"} element={<ProfileMyGames />} />
+              <Route
+                path={"/profile/my-bookings"}
+                element={<ProfileMyBookings />}
+              />
+            </Route>
+            <Route path="add-game" element={<AddGamePage />} />
+            <Route path="*" element={<RouteNotFound />} />
           </Route>
-          <Route path="add-game" element={<AddGamePage />} />
-          <Route path="*" element={<RouteNotFound />} />
         </Routes>
       </BrowserRouter>
     );

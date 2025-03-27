@@ -38,6 +38,7 @@ export default function AddGamePage() {
       formData.append("minPlayers", minPlayers);
       formData.append("maxPlayers", maxPlayers);
       formData.append("price", price);
+      console.log(image)
       await axios.post("/games", formData, {
         headers: {
           "Content-Type": "multipart/form-data",

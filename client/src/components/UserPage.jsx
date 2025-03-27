@@ -72,10 +72,9 @@ export default function UserPage() {
   }
 
   return (
-      <div>
-        <div className="min-h-screen bg-background flex items-start px-8 justify-center gap-10">
+        <div className="min-h-screen bg-background flex items-start justify-center gap-10 w-full">
           {/* Left Section (User Information) */}
-          <div className="w-1/4 bg-background p-8 space-y-6 sticky top-0">
+          <div className="w-1/2 lg:w-1/3 max-w-70 bg-background p-8 space-y-6 sticky top-0">
             <div className="flex justify-center">
               <div className="relative" onClick={handleAvatarClick}> {/* 🔥 Додаємо обгортку з обробником кліку */}
                 {avatar ? (
@@ -120,12 +119,6 @@ export default function UserPage() {
             </button>
 
             <div className="space-y-4">
-              <button
-                  className="w-full bg-secondary text-white py-2 rounded-lg hover:bg-orange-300 transition-colors text-lg"
-                  onClick={() => navigate("/add-game")}
-              >
-                Додати гру
-              </button>
 
               <button
                   onClick={handleLogout}
@@ -137,10 +130,9 @@ export default function UserPage() {
           </div>
 
           {/* Right Section (Games, Bookings) */}
-          <div className="w-3/4 bg-background rounded-xl mt-8 pr-6 space-y-12 flex flex-col items-center">
+          <div className="w-full bg-background rounded-xl mt-8 pr-6 space-y-12 flex flex-col items-center">
             <Outlet />
           </div>
         </div>
-      </div>
   );
 }

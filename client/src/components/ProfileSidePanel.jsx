@@ -6,7 +6,7 @@ const ProfileSidePanel = ({ handleLogout }) => {
   return (
     <>
       {/* Left Section (User Information: Avatar, Name, Email, Add Game, Logout Button) */}
-      <div className="w-1/3 bg-white rounded-xl shadow-lg p-6 space-y-6">
+      <div className=" bg-white rounded-xl shadow-lg p-6 space-y-6">
         <div className="flex justify-center">
           {avatar ? (
             <img

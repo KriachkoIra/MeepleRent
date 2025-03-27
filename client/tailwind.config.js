@@ -1,5 +1,4 @@
 /** @type {import('tailwindcss').Config} */
-const colors = require("tailwindcss/colors");
 
 export default {
   mode: "jit",
@@ -18,6 +17,13 @@ export default {
         primary: "#EA6A55",
         secondary: "#F5C47B",
       },
+      screens: {
+        'sm': '640px', // Default
+        'md': '768px', // Default
+        'lg': '1024px', // Default
+        'xl': '1380px', // Custom xl
+        '2xl': '1670px', // Custom 2xl
+      }
     },
   },
   plugins: [],

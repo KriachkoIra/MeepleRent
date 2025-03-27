@@ -66,6 +66,7 @@ const getUserBookings = async (req, res) => {
 
         const bookings = await Booking.find({ user: userId })
             .populate("game", "name image price")
+            .populate("user", "username _id")
             .sort({ startDate: 1 });
         return res.json(bookings);
     } catch (err) {

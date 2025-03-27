@@ -13,6 +13,19 @@
   font-family: "Madimi One", "Merienda", monospace;
 }
 
+.main-wrapper {
+  display: flex;
+  flex-direction: center;
+  width: 100%;
+  padding: 0 100px;
+  background-color: #f7f9ef;
+  padding-bottom: 200px;
+  font-size: 14px;
+  @media (min-width: 400px) {
+    font-size: 16px;
+  }
+}
+
 .register-picture {
   background-image: url("./assets/register.jpg");
   background-size: cover;
@@ -65,4 +78,18 @@ button {
 .lucide {
   /* Change this! */
   color: #F5C47B;
+}
+
+/* Apply 3 columns on larger screens */
+@media (min-width: 1380px) {
+  .profile-my-games__list {
+    grid-template-columns: repeat(3, 1fr); /* 3 columns on screens larger than 1024px */
+  }
+}
+
+/* Apply 3 columns on larger screens */
+@media (min-width: 1660px) {
+  .profile-my-games__list {
+    grid-template-columns: repeat(4, 1fr); /* 3 columns on screens larger than 1024px */
+  }
 }
