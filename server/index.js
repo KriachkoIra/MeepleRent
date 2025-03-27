@@ -22,10 +22,10 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 app.use(
-    cors({
-        origin: [process.env.CLIENT_URL],
-        credentials: true,
-    })
+  cors({
+    origin: [process.env.CLIENT_URL],
+    credentials: true,
+  })
 );
 
 const PORT = process.env.PORT || 3001;

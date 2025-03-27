@@ -1,6 +1,7 @@
 import Game from "../models/Game.js";
 import { getUserId } from "./user.controller.js";
 import { cloudinary } from "../cloudinary.js";
+
 const getGames = async function (req, res) {
   try {
     let query = {};
@@ -38,15 +39,14 @@ const getGames = async function (req, res) {
   }
 };
 
-
 const deleteGame = async function (req, res) {
   try {
     const userId = getUserId(req);
 
     if (res.game.owner._id.toString() !== userId)
       return res
-          .status(401)
-          .json({ error: "User is not the owner of this game." });
+        .status(401)
+        .json({ error: "User is not the owner of this game." });
 
     await Game.deleteOne(res.game);
     return res.json({ message: "Successfully deleted." });
@@ -57,21 +57,30 @@ const deleteGame = async function (req, res) {
 
 const addGame = async function (req, res) {
   try {
-    const { name, description, time, difficulty, minPlayers, maxPlayers, price } = req.body;
+    const {
+      name,
+      description,
+      time,
+      difficulty,
+      minPlayers,
+      maxPlayers,
+      price,
+    } = req.body;
     const owner = getUserId(req);
 
-    if (!owner) return res.status(401).json({ error: "Needs user authorization." });
+    if (!owner)
+      return res.status(401).json({ error: "Needs user authorization." });
 
-    let imageUrl = "https://res.cloudinary.com/duwmrfgn6/image/upload/v1742931468/meepleRent/games/vphy5x365vnkrkkt3m3k.jpg";
+    let imageUrl =
+      "https://res.cloudinary.com/duwmrfgn6/image/upload/v1742931468/meepleRent/games/vphy5x365vnkrkkt3m3k.jpg";
     if (req.file) {
       const result = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-            { folder: "meepleRent/games" },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-        ).end(req.file.buffer);
+        cloudinary.uploader
+          .upload_stream({ folder: "meepleRent/games" }, (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          })
+          .end(req.file.buffer);
       });
       imageUrl = result.secure_url;
     } else {
@@ -92,7 +101,11 @@ const addGame = async function (req, res) {
     });
 
     const createdGame = await game.save();
-    return res.json({ id: createdGame._id, name: createdGame.name, image: createdGame.image });
+    return res.json({
+      id: createdGame._id,
+      name: createdGame.name,
+      image: createdGame.image,
+    });
   } catch (err) {
     return res.status(401).json({ error: err.message });
   }
@@ -105,16 +118,17 @@ const updateGame = async function (req, res) {
 
     const userId = getUserId(req);
     if (game.owner._id.toString() !== userId)
-      return res.status(401).json({ error: "User is not the owner of this game." });
+      return res
+        .status(401)
+        .json({ error: "User is not the owner of this game." });
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload_stream(
-          { folder: "meepleRent/games" },
-          (error, result) => {
-            if (error) throw error;
-            game.image = result.secure_url;
-          }
-      ).end(req.file.buffer);
+      const result = await cloudinary.uploader
+        .upload_stream({ folder: "meepleRent/games" }, (error, result) => {
+          if (error) throw error;
+          game.image = result.secure_url;
+        })
+        .end(req.file.buffer);
     }
 
     game.name = req.body.name || game.name;
@@ -126,7 +140,10 @@ const updateGame = async function (req, res) {
     game.price = req.body.price || game.price;
 
     await game.save();
-    return res.json({ message: "Game updated successfully", image: game.image });
+    return res.json({
+      message: "Game updated successfully",
+      image: game.image,
+    });
   } catch (err) {
     return res.status(401).json({ error: err.message });
   }
