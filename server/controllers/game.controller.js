@@ -1,7 +1,6 @@
 import Game from "../models/Game.js";
 import { getUserId } from "./user.controller.js";
 import { cloudinary } from "../cloudinary.js";
-
 const getGames = async function (req, res) {
   try {
     let query = {};
@@ -13,10 +12,10 @@ const getGames = async function (req, res) {
     if (req.query.difficulty) {
       query.difficulty = req.query.difficulty;
     }
-    if (req.query.minPlayers && req.query.maxPlayers) {
+    if (req.query.players) {
       query.$and = [
-        { minPlayers: { $lte: Number(req.query.minPlayers) } },
-        { maxPlayers: { $gte: Number(req.query.maxPlayers) } },
+        { minPlayers: { $lte: Number(req.query.players) } },
+        { maxPlayers: { $gte: Number(req.query.players) } },
       ];
     }
 
@@ -58,6 +57,7 @@ const deleteGame = async function (req, res) {
 const addGame = async function (req, res) {
   try {
     const {
+      image,
       name,
       description,
       time,
@@ -73,14 +73,14 @@ const addGame = async function (req, res) {
 
     let imageUrl =
       "https://res.cloudinary.com/duwmrfgn6/image/upload/v1742931468/meepleRent/games/vphy5x365vnkrkkt3m3k.jpg";
-    if (req.file) {
+    if (image) {
       const result = await new Promise((resolve, reject) => {
         cloudinary.uploader
           .upload_stream({ folder: "meepleRent/games" }, (error, result) => {
             if (error) reject(error);
             else resolve(result);
           })
-          .end(req.file.buffer);
+          .end(image);
       });
       imageUrl = result.secure_url;
     } else {
@@ -122,13 +122,13 @@ const updateGame = async function (req, res) {
         .status(401)
         .json({ error: "User is not the owner of this game." });
 
-    if (req.file) {
+    if (req.body.image) {
       const result = await cloudinary.uploader
         .upload_stream({ folder: "meepleRent/games" }, (error, result) => {
           if (error) throw error;
           game.image = result.secure_url;
         })
-        .end(req.file.buffer);
+        .end(req.body.image.buffer);
     }
 
     game.name = req.body.name || game.name;

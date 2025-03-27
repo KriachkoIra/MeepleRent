@@ -44,7 +44,7 @@ const updateUser = async function (req, res) {
       });
       user.avatar = result.secure_url;
     }
-
+    user.email = req.body.email || user.email;
     user.username = req.body.username || user.username;
     await user.save();
     return res.json({ message: "User data updated successfully", avatar: user.avatar });

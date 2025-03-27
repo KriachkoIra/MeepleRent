@@ -19,162 +19,154 @@ export default function AddGamePage() {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
       reader.onloadend = () => setImage(reader.result);
+      reader.readAsDataURL(file);
     }
   };
 
   const removeImage = () => setImage(null);
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    const link = `http://localhost:3001/games`;
-
-    console.log(image);
-
-    await axios
-      .post(link, {
-        name,
-        description,
-        difficulty,
-        minPlayers,
-        maxPlayers,
-        time,
-        price,
-        image,
-      })
-      .then(async (res) => {
-        alert("Гру успішно додано!");
-      })
-      .catch((err) => {
-        if (err.response && err.response.data) {
-          alert("Помилка: " + err.response.data.message);
-        } else {
-          alert("Помилка з підключенням до сервера");
-        }
-        console.log(err);
+  const handleAdd = async () => {
+    // todo: validation
+    try {
+      const formData = new FormData();
+      formData.append("image", image);
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("time", time);
+      formData.append("difficulty", difficulty);
+      formData.append("minPlayers", minPlayers);
+      formData.append("maxPlayers", maxPlayers);
+      formData.append("price", price);
+      await axios.post("/games", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
+      navigate("/profile");
+    } catch (e) {
+      console.log("Error e", e);
+      // todo: handle error properly
+    }
   };
 
   return (
     <div className="overflow-hidden h-[calc(100vh-64px)] bg-background py-12">
-      <form onSubmit={handleAdd}>
-        <div className="w-full px-32 pr-52">
-          <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed border-gray-500 rounded-lg w-1/3 h-50">
-            {!image ? (
-              <label className="cursor-pointer flex flex-col h-full items-center p-4 mt-auto text-gray-500">
-                <span className="text-sm text-center">
-                  Натисни чи перетягни фото, щоб завантажити його
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            ) : (
-              <div className="relative">
-                <img
-                  src={image}
-                  alt="Preview"
-                  className="w-40 h-40 object-cover rounded-lg shadow-md"
-                />
-                <button
-                  onClick={removeImage}
-                  className="absolute -top-2 -right-2 bg-white rounded-full"
-                >
-                  <XCircle className="text-red-500 w-6 h-6" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex px-32 gap-20 mt-10">
-          <div className="flex flex-col w-1/3 gap-10">
-            <input
-              type="number"
-              value={time}
-              required
-              placeholder="Час гри у хвилинах"
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
-            />
-            <select
-              name="difficulty"
-              id="difficulty"
-              value={difficulty}
-              onChange={(e) => setDifficulty(e.target.value)}
-              className="w-full text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
-            >
-              <option value="low">Низька складність</option>
-              <option value="normal">Середня складність</option>
-              <option value="high">Висока складність</option>
-            </select>
-            <div className="w-full flex justify-between">
+      <div className="w-full px-32 pr-52">
+        <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed border-gray-500 rounded-lg w-1/3 h-50">
+          {!image ? (
+            <label className="cursor-pointer flex flex-col h-full items-center p-4 mt-auto text-gray-500">
+              <span className="text-sm text-center">
+                Натисни чи перетягни фото, щоб завантажити його
+              </span>
               <input
-                type="number"
-                required
-                value={minPlayers}
-                onChange={(e) => setMinPlayers(e.target.value)}
-                placeholder="Мін. к-сть гравців"
-                className="text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
               />
-              <span>-</span>
-              <input
-                type="number"
-                required
-                value={maxPlayers}
-                onChange={(e) => setMaxPlayers(e.target.value)}
-                placeholder="Макс. к-сть гравців"
-                className="text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
+            </label>
+          ) : (
+            <div className="relative">
+              <img
+                src={image}
+                alt="Preview"
+                className="w-40 h-40 object-cover rounded-lg shadow-md"
               />
+              <button
+                onClick={removeImage}
+                className="absolute -top-2 -right-2 bg-white rounded-full"
+              >
+                <XCircle className="text-red-500 w-6 h-6" />
+              </button>
             </div>
+          )}
+        </div>
+      </div>
+      <div className="flex px-32 gap-20 mt-10">
+        <div className="flex flex-col w-1/3 gap-10">
+          <input
+            type="number"
+            value={time}
+            required
+            placeholder="Час гри у хвилинах"
+            onChange={(e) => setTime(e.target.value)}
+            className="w-full text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
+          />
+          <select
+            name="difficulty"
+            id="difficulty"
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+            className="w-full text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
+          >
+            <option value="low">Низька складність</option>
+            <option value="normal">Середня складність</option>
+            <option value="high">Висока складність</option>
+          </select>
+          <div className="w-full flex justify-between">
             <input
-              required
               type="number"
-              value={price}
-              placeholder="Ціна подобово"
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
-            />
-          </div>
-          <div className="flex flex-col w-2/3 gap-10">
-            <input
               required
-              type="text"
-              value={name}
-              placeholder="Назва гри"
-              onChange={(e) => setName(e.target.value)}
-              className="w-full text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
+              value={minPlayers}
+              onChange={(e) => setMinPlayers(e.target.value)}
+              placeholder="Мін. к-сть гравців"
+              className="text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
             />
-            <textarea
-              id="description"
-              name="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows="7"
-              cols="50"
-              className="h-full  text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 resize-none"
-              placeholder="Опис гри"
-            ></textarea>
+            <span>-</span>
+            <input
+              type="number"
+              required
+              value={maxPlayers}
+              onChange={(e) => setMaxPlayers(e.target.value)}
+              placeholder="Макс. к-сть гравців"
+              className="text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
+            />
           </div>
+          <input
+            required
+            type="number"
+            value={price}
+            placeholder="Ціна подобово"
+            onChange={(e) => setPrice(e.target.value)}
+            className="w-full text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
+          />
         </div>
-        <div className="flex px-32 gap-20 mt-10 justify-between">
-          <button
-            className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-red-500 w-48"
-            onClick={() => navigate("/profile")}
-          >
-            Скасувати
-          </button>
-          <button
-            className="bg-secondary text-white py-2 px-4 rounded-lg hover:bg-orange-300 w-48"
-            type="Submit"
-          >
-            Додати
-          </button>
+        <div className="flex flex-col w-2/3 gap-10">
+          <input
+            required
+            type="text"
+            value={name}
+            placeholder="Назва гри"
+            onChange={(e) => setName(e.target.value)}
+            className="w-full text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
+          />
+          <textarea
+            id="description"
+            name="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows="7"
+            cols="50"
+            className="h-full  text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 resize-none"
+            placeholder="Опис гри"
+          ></textarea>
         </div>
-      </form>
+      </div>
+      <div className="flex px-32 gap-20 mt-10 justify-between">
+        <button
+          className="bg-primary text-white py-2 px-4 rounded-lg hover:bg-red-500 w-48"
+          onClick={() => navigate("/profile")}
+        >
+          Скасувати
+        </button>
+        <button
+          onClick={handleAdd}
+          className="bg-secondary text-white py-2 px-4 rounded-lg hover:bg-orange-300 w-48"
+        >
+          Додати
+        </button>
+      </div>
     </div>
   );
 }
