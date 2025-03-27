@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function AddGamePage() {
   const [name, setName] = useState("");
@@ -24,6 +25,30 @@ export default function AddGamePage() {
   };
 
   const removeImage = () => setImage(null);
+
+  const handleAdd = async () => {
+    // todo: validation
+    try {
+      const formData = new FormData();
+      formData.append("image", image);
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("time", time);
+      formData.append("difficulty", difficulty);
+      formData.append("minPlayers", minPlayers);
+      formData.append("maxPlayers", maxPlayers);
+      formData.append("price", price);
+      await axios.post("/games", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      navigate("/profile");
+    } catch (e) {
+      console.log("Error e", e);
+      // todo: handle error properly
+    }
+  };
 
   return (
     <div className="overflow-hidden h-[calc(100vh-64px)] bg-background py-12">
@@ -92,7 +117,7 @@ export default function AddGamePage() {
             <input
               type="number"
               required
-              value={minPlayers}
+              value={maxPlayers}
               onChange={(e) => setMaxPlayers(e.target.value)}
               placeholder="Макс. к-сть гравців"
               className="text-center text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500"
@@ -135,7 +160,10 @@ export default function AddGamePage() {
         >
           Скасувати
         </button>
-        <button className="bg-secondary text-white py-2 px-4 rounded-lg hover:bg-orange-300 w-48">
+        <button
+          onClick={handleAdd}
+          className="bg-secondary text-white py-2 px-4 rounded-lg hover:bg-orange-300 w-48"
+        >
           Додати
         </button>
       </div>

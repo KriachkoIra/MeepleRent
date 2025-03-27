@@ -2,9 +2,10 @@ import { useContext, useState, useRef } from "react";
 import { UserContext } from "../context/UserContext.jsx";
 import { Link, Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-export default function UserPage({ handleLogout }) {
-  const { id, username, email, avatar, setAvatar } = useContext(UserContext);
+export default function UserPage() {
+  const { id, username, setUsername, email, setEmail, setId, avatar, setAvatar } = useContext(UserContext);
   const [editableUsername, setEditableUsername] = useState(username);
   const [editableEmail, setEditableEmail] = useState(email);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -55,6 +56,20 @@ export default function UserPage({ handleLogout }) {
       alert("Помилка оновлення: " + err.message);
     }
   };
+
+  const handleLogout = () => {
+    axios
+      .post("/auth/logout")
+      .then(() => {
+        setUsername(null);
+        setEmail(null);
+        setId(null);
+        setAvatar(null);
+      })
+      .catch((err) => {
+        console.error("Error logging out:", err);
+      });
+  }
 
   return (
       <div>

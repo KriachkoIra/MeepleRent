@@ -43,34 +43,13 @@ function App() {
       });
   }, [setUsername, setEmail, setId, setAvatar]);
 
-  // // Function to handle the "User Page" button click
-  // const handleUserPageClick = () => {
-  //   setShowUserPage(true);
-  // };
-
-  // // Handle logout
-  // const handleLogout = () => {
-  //   axios
-  //     .post("/auth/logout")
-  //     .then(() => {
-  //       setUsername(null);
-  //       setEmail(null);
-  //       setId(null);
-  //       setAvatar(null);
-  //       setShowUserPage(false);
-  //     })
-  //     .catch((err) => {
-  //       console.error("Error logging out:", err);
-  //     });
-  // };
-
   if (username) {
     return (
       <BrowserRouter>
         <Navbar />
         <Routes>
           <Route path="/" element={<Homepage />} />
-          <Route element={<UserPage />}>
+          <Route element={<UserPage  />}>
             <Route default path={"/profile"} element={<ProfileMyGames />} />
             <Route
               path={"/profile/my-reservations"}

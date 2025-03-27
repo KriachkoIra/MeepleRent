@@ -12,7 +12,7 @@ export function UserContextProvider({ children }) {
 
     useEffect(() => {
         axios
-            .get("http://localhost:5000/auth/verify", { withCredentials: true })
+            .get("/auth/verify", { withCredentials: true })
             .then((res) => {
                 setId(res.data.id);
                 setEmail(res.data.email);
