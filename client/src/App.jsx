@@ -4,7 +4,6 @@ import axios from "axios";
 import { UserContext } from "./context/UserContext.jsx";
 import Navbar from "./components/Navbar.jsx";
 import AddGamePage from "./components/AddGamePage.jsx";
-import MainLayout from "./components/MainLayout.jsx";
 
 const Register = lazy(() => import("./components/Register.jsx"));
 const Homepage = lazy(() => import("./components/Homepage.jsx"));
@@ -46,20 +45,19 @@ function App() {
 
   if (username) {
     return (
-      <BrowserRouter >
+      <BrowserRouter>
+        <Navbar />
         <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Homepage />} />
-            <Route element={<UserPage />}>
-              <Route default path={"/profile"} element={<ProfileMyGames />} />
-              <Route
-                path={"/profile/my-bookings"}
-                element={<ProfileMyBookings />}
-              />
-            </Route>
-            <Route path="add-game" element={<AddGamePage />} />
-            <Route path="*" element={<RouteNotFound />} />
+          <Route path="/" element={<Homepage />} />
+          <Route element={<UserPage />}>
+            <Route default path={"/profile"} element={<ProfileMyGames />} />
+            <Route
+              path={"/profile/my-bookings"}
+              element={<ProfileMyBookings />}
+            />
           </Route>
+          <Route path="add-game" element={<AddGamePage />} />
+          <Route path="*" element={<RouteNotFound />} />
         </Routes>
       </BrowserRouter>
     );

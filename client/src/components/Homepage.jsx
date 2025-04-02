@@ -39,24 +39,24 @@ export default function Homepage() {
 
   return (
     <div>
-      <div className="flex flex-row mt-8 justify-between px-30">
+      <div className="grid grid-cols-1 xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-4 mt-8 px-20 text-center">
         <input
           value={search}
           type="text"
           placeholder="Пошук за назвою"
-          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-64"
+          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-54 m-auto"
           onChange={(e) => setSearch(e.target.value)}
         />
         <input
           value={priceFilter}
           type="text"
           placeholder="Ціна до:"
-          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-50"
+          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-54 m-auto"
           onChange={(e) => setPriceFilter(e.target.value)}
         />
         <select
           value={sortBy}
-          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-50"
+          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-54 m-auto"
           onChange={(e) => setSortBy(e.target.value)}
         >
           <option value="">Сортувати за</option>
@@ -72,7 +72,7 @@ export default function Homepage() {
         <select
           value={difficultyFilter}
           onChange={(e) => setDifficultyFilter(e.target.value)}
-          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-50"
+          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-54 m-auto"
         >
           <option value="">Складність</option>
           <option value="low">Легка</option>
@@ -82,7 +82,7 @@ export default function Homepage() {
         <select
           value={playersFilter}
           onChange={(e) => setPlayersFilter(e.target.value)}
-          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-50"
+          className=" text-gray-700 border-b-2 pb-2 border-gray-500 focus:outline-none focus:border-yellow-500 w-54 m-auto"
         >
           <option value="">Кількість гравців</option>
           <option value="1">1</option>
@@ -94,7 +94,7 @@ export default function Homepage() {
         </select>
       </div>
       {games.length > 0 ? (
-        <div className="grid grid-cols-4 px-30 gap-4 auto-rows-fr mt-8">
+        <div className="grid grid-cols-1 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 px-20 gap-4  mt-8">
           {games.map((game) => (
             <Game key={game._id} item={game} />
           ))}
@@ -122,7 +122,7 @@ function Game({
 }) {
   return (
     <div className="mb-4">
-      <div className="my-game min-md w-70 bg-background rounded-xl py-5 px-3 flex flex-col h-full">
+      <div className="my-game m-auto min-md w-70 bg-background rounded-xl py-5 px-3 flex flex-col h-full">
         <div
           className="my-game__picture w-64 h-64 bg-no-repeat bg-center"
           style={{
@@ -139,7 +139,7 @@ function Game({
                 {price}грн/день
               </div>
             </div>
-            <div className="my-game__desc mt-1">{description}</div>
+            <div className="my-game__desc mt-2">{description}</div>
           </div>
 
           {/* Pushes .bottom_data to the bottom */}

@@ -91,7 +91,7 @@ const verifyUser = async function (req, res) {
       const user = await User.findById(decoded.id);
       if (!user) throw "No user.";
       return res.json({
-        ...decoded,
+        id: user._id,
         username: user.username,
         email: user.email,
         avatar: user.avatar,

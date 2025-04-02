@@ -9,28 +9,31 @@ export default function Register() {
   const [alert, setAlert] = useState("");
   const [isRegister, setIsRegister] = useState(false);
 
-  const { setUsername, setEmail } = useContext(UserContext);
+  const { setUsername, setEmail, setId, setAvatar } = useContext(UserContext);
 
   const registerUser = async (e) => {
     e.preventDefault();
 
-    const link = `http://localhost:3001${isRegister ? "/auth/register" : "/auth/login"}`;
-
+    const link = `http://localhost:3001${
+      isRegister ? "/auth/register" : "/auth/login"
+    }`;
 
     await axios
       .post(link, { email, username, password })
       .then(async (res) => {
+        setId(res.data.id);
         setEmail(res.data.email);
+        setAvatar(res.data.avatar);
         setUsername(res.data.username);
       })
-        .catch((err) => {
-          if (err.response && err.response.data) {
-            setAlert(err.response.data.message);
-          } else {
-            setAlert('Помилка з підключенням до сервера');
-          }
-          console.log(err);
-        });
+      .catch((err) => {
+        if (err.response && err.response.data) {
+          setAlert(err.response.data.message);
+        } else {
+          setAlert("Помилка з підключенням до сервера");
+        }
+        console.log(err);
+      });
   };
 
   return (

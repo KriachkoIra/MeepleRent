@@ -26,7 +26,7 @@ const ProfileMyGames = () => {
     };
 
     fetchData();
-  }, []);
+  }, [id]);
 
   const handleDelete = async (gameId) => {
     setLoading(true);
@@ -37,15 +37,22 @@ const ProfileMyGames = () => {
       console.error(error.message);
     }
     setLoading(false);
-  }
+  };
 
   return (
     <div className="profile-my-games flex flex-col w-full">
-      <ProfileNavButtons activePage="my-games"/>
+      <ProfileNavButtons activePage="my-games" />
       <div className="profile-my-games__list w-full grid grid-cols-1 min-lg:grid-cols-2 gap-15 mt-12">
         {loading && <div>Loading</div>}
-        {!loading && data.map((item) => <MyGamesGame item={item} handleDelete={handleDelete} />)}
-        {!loading && <AddGameEmptyListItem/>}
+        {!loading &&
+          data.map((item) => (
+            <MyGamesGame
+              key={item._id}
+              item={item}
+              handleDelete={handleDelete}
+            />
+          ))}
+        {!loading && <AddGameEmptyListItem />}
       </div>
     </div>
   );
