@@ -47,7 +47,7 @@ const deleteGame = async function (req, res) {
         .status(401)
         .json({ error: "User is not the owner of this game." });
 
-    await Game.deleteOne(res.game);
+    await Game.findByIdAndDelete(res.game._id);
     return res.json({ message: "Successfully deleted." });
   } catch (err) {
     return res.status(500).json({ message: err.message });

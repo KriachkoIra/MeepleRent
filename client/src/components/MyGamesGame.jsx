@@ -14,11 +14,14 @@ const MyGamesGame = ({
     minPlayers,
     maxPlayers,
   },
-  handleDelete
+  setDeleteId,
 }) => {
   return (
     <div key={_id} className="my-game bg-[#f0f2e6] rounded-xl overflow-hidden">
-      <img src={image} className="my-game__picture w-auto aspect-square object-cover overflow-hidden"></img>
+      <img
+        src={image}
+        className="my-game__picture w-auto aspect-square object-cover overflow-hidden"
+      ></img>
       <div className="my-game__info-wrapper px-4 py-5">
         <div className="my-game__title-desc-wrapper w-full">
           <div className="flex items-center justify-between">
@@ -54,8 +57,13 @@ const MyGamesGame = ({
           <button className="w-[45%] min-w-24 py-0.5 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-colors shadow-md">
             Редагувати
           </button>
-          
-          <button onClick={() => handleDelete(_id)} className="w-[45%] min-w-24 py-0.5 rounded-lg border-2 border-primary hover:bg-primary hover:text-white transition-colors shadow-md">Видалити</button>
+
+          <button
+            onClick={() => setDeleteId(_id)}
+            className="w-[45%] min-w-24 py-0.5 rounded-lg border-2 border-primary hover:bg-primary hover:text-white transition-colors shadow-md"
+          >
+            Видалити
+          </button>
         </div>
       </div>
     </div>
