@@ -13,8 +13,6 @@ const ProfileMyGames = () => {
   const [deleteId, setDeleteId] = useState(null);
   const { id } = useContext(UserContext);
 
-  const navigate = useNavigate();
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -30,7 +28,7 @@ const ProfileMyGames = () => {
     fetchData();
   }, [id]);
 
-  const handleDelete = async (gameId) => {
+  const handleDelete = async () => {
     setLoading(true);
     try {
       setData(data.filter(({ _id }) => _id != deleteId));

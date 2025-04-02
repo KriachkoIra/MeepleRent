@@ -1,6 +1,7 @@
 import { CircleGauge, Clock, Users } from "lucide-react";
 import React from "react";
 import { DIFFICULTY_MAP } from "../constants";
+import { Link } from "react-router-dom";
 
 const MyGamesGame = ({
   item: {
@@ -17,21 +18,27 @@ const MyGamesGame = ({
   setDeleteId,
 }) => {
   return (
-    <div key={_id} className="my-game bg-[#f0f2e6] rounded-xl overflow-hidden">
+    <div
+      key={_id}
+      className="my-game bg-[#f0f2e6] rounded-xl overflow-hidden flex flex-col h-full"
+    >
       <img
         src={image}
         className="my-game__picture w-auto aspect-square object-cover overflow-hidden"
       ></img>
-      <div className="my-game__info-wrapper px-4 py-5">
+      <div className="my-game__info-wrapper flex flex-col flex-grow px-4 py-5">
         <div className="my-game__title-desc-wrapper w-full">
           <div className="flex items-center justify-between">
             <div className="my-game__title text-xl line-clamp-2">{name}</div>
             <div className="my-game__price text-gray-600 font-medium">
-              {price}грн/день
+              {price} грн/день
             </div>
           </div>
-          <div className="my-game__desc mt-1">{description}</div>
+          <div className="my-game__desc mt-2">{description}</div>
         </div>
+
+        <div className="flex-grow"></div>
+
         <div className="my-game__time-diff-players-wrapper w-full my-4 flex justify-between">
           <div className="my-game__time flex-col flex items-center">
             <Clock />
@@ -54,9 +61,12 @@ const MyGamesGame = ({
           </div>
         </div>
         <div className="my-game__buttons w-full flex justify-between mt-3">
-          <button className="w-[45%] min-w-24 py-0.5 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-colors shadow-md">
+          <Link
+            to={`/edit-game/${_id}`}
+            className="w-[45%] min-w-24 text-center py-0.5 rounded-lg border-2 border-secondary hover:bg-secondary hover:text-white transition-colors shadow-md"
+          >
             Редагувати
-          </button>
+          </Link>
 
           <button
             onClick={() => setDeleteId(_id)}

@@ -122,13 +122,19 @@ const updateGame = async function (req, res) {
         .status(401)
         .json({ error: "User is not the owner of this game." });
 
+    let imageUrl;
     if (req.body.image) {
-      const result = await cloudinary.uploader
-        .upload_stream({ folder: "meepleRent/games" }, (error, result) => {
-          if (error) throw error;
-          game.image = result.secure_url;
-        })
-        .end(req.body.image.buffer);
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream({ folder: "meepleRent/games" }, (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          })
+          .end(req.body.image);
+      });
+      imageUrl = result.secure_url;
+    } else {
+      console.log("No file uploaded");
     }
 
     game.name = req.body.name || game.name;
@@ -138,6 +144,7 @@ const updateGame = async function (req, res) {
     game.minPlayers = req.body.minPlayers || game.minPlayers;
     game.maxPlayers = req.body.maxPlayers || game.maxPlayers;
     game.price = req.body.price || game.price;
+    game.image = imageUrl || game.image;
 
     await game.save();
     return res.json({

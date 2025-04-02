@@ -4,6 +4,7 @@ import axios from "axios";
 import { UserContext } from "./context/UserContext.jsx";
 import Navbar from "./components/Navbar.jsx";
 import AddGamePage from "./components/AddGamePage.jsx";
+import EditGamePage from "./components/EditGamePage.jsx";
 
 const Register = lazy(() => import("./components/Register.jsx"));
 const Homepage = lazy(() => import("./components/Homepage.jsx"));
@@ -57,6 +58,7 @@ function App() {
             />
           </Route>
           <Route path="add-game" element={<AddGamePage />} />
+          <Route path="edit-game/:id" element={<EditGamePage />} />
           <Route path="*" element={<RouteNotFound />} />
         </Routes>
       </BrowserRouter>

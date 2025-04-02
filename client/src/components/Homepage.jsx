@@ -136,7 +136,7 @@ function Game({
             <div className="flex items-center justify-between mt-5">
               <div className="my-game__title text-xl line-clamp-2">{name}</div>
               <div className="my-game__price text-gray-600 font-medium">
-                {price}грн/день
+                {price} грн/день
               </div>
             </div>
             <div className="my-game__desc mt-2">{description}</div>
