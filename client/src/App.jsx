@@ -10,6 +10,7 @@ const Register = lazy(() => import("./components/Register.jsx"));
 const Homepage = lazy(() => import("./components/Homepage.jsx"));
 const UserPage = lazy(() => import("./components/UserPage.jsx"));
 const ProfileMyGames = lazy(() => import("./components/ProfileMyGames.jsx"));
+const GamePage = lazy(() => import("./components/GamePage.jsx"));
 const ProfileMyBookings = lazy(() =>
   import("./components/ProfileMyBookings.jsx")
 );
@@ -50,6 +51,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Homepage />} />
+            <Route path="/game/:id" element={<GamePage />} />
           <Route element={<UserPage />}>
             <Route default path={"/profile"} element={<ProfileMyGames />} />
             <Route
