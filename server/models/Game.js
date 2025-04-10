@@ -11,6 +11,7 @@ const GameSchema = new mongoose.Schema({
   isAvailable: { type: Boolean, default: true },
   price: Number,
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
 });
 
 const Game = mongoose.model("Game", GameSchema);

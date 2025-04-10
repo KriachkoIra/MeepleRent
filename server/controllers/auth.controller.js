@@ -68,7 +68,10 @@ const loginUser = async function (req, res) {
     } catch (err) {
       throw err;
     }
-  } catch (err) {}
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 const logoutUser = function (req, res) {

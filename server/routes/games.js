@@ -1,11 +1,12 @@
 import express from "express";
-
 import {
   getGames,
   addGame,
   deleteGame,
-  updateGame, checkAvailability,
+  updateGame,
+  checkAvailability,
 } from "../controllers/game.controller.js";
+import { createReview, getGameReviews, deleteReview } from "../controllers/review.controller.js";
 import Game from "../models/Game.js";
 import upload from "../middleware/multer.js";
 
@@ -13,6 +14,8 @@ const router = express.Router();
 
 router.route("/").get(getGames).post(upload.single("image"), addGame);
 router.route("/:id/availability").get(checkAvailability);
+router.route("/:id/reviews").get(getGameReviews).post(createReview);
+router.route("/reviews/:id").delete(deleteReview);
 
 router
     .route("/:id")
