@@ -43,7 +43,7 @@ export default function GamePage() {
                     {/* Game Image */}
                     <div className="w-full md:w-1/2 relative">
                         <div
-                            className="w-full h-96 bg-center bg-cover"
+                            className="w-full h-full bg-center bg-cover"
                             style={{
                                 backgroundImage: `url(${game.image})`,
                                 backgroundPosition: 'center',
