@@ -11,6 +11,8 @@ import gamesRouter from "./routes/games.js";
 import usersRouter from "./routes/users.js";
 import bookingsRouter from "./routes/bookings.js";
 import reviewsRouter from "./routes/reviews.js";
+import chatsRouter from "./routes/chats.js";
+import messagesRouter from "./routes/messages.js";
 import { configureCloudinary } from "./cloudinary.js";
 
 dotenv.config();
@@ -40,5 +42,7 @@ app.use("/games", gamesRouter);
 app.use("/users", usersRouter);
 app.use("/bookings", bookingsRouter);
 app.use("/reviews", reviewsRouter);
+app.use("/chats", chatsRouter);
+app.use("/messages", messagesRouter);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

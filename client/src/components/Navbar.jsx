@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { MessageSquare } from "lucide-react";
 
 export default function Navbar() {
   return (
@@ -16,7 +17,11 @@ export default function Navbar() {
           Контакти
         </Link>
       </div>
-      <div>
+      <div className="flex items-center space-x-4">
+        <Link to="/chat" className="hover:underline flex items-center">
+          <MessageSquare className="mr-1" />
+          Чат
+        </Link>
         <Link to="/profile" className="hover:underline">
           Мій профіль
         </Link>

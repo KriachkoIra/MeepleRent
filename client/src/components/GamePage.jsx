@@ -1,18 +1,21 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Clock, CircleGauge, Users } from "lucide-react";
+import { Clock, CircleGauge, Users, MessageSquare } from "lucide-react";
 import { DIFFICULTY_MAP } from "../constants";
 
 export default function GamePage() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [game, setGame] = useState(null);
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState("");
 
     useEffect(() => {
+        document.title = "Гра | MeepleRent";
         axios.get(`/games/${id}`).then((res) => {
             setGame(res.data);
+            document.title = `Гра - ${res.data.name} | MeepleRent`;
         });
 
         //  коментарі
@@ -31,6 +34,12 @@ export default function GamePage() {
             setNewComment("");
 
             axios.post(`/games/${id}/comments`, { text: newComment });
+        }
+    };
+
+    const handleStartChat = () => {
+        if (game && game.owner && game.owner._id) {
+            navigate(`/chat/${game.owner._id}`);
         }
     };
 
@@ -102,9 +111,19 @@ export default function GamePage() {
                             </div>
                         </div>
 
-                        <button className="mt-8 px-6 py-2 rounded-lg bg-secondary text-white py-2 rounded-lg hover:bg-orange-300 transition-colors text-lg">
-                            Забронювати гру
-                        </button>
+                        <div className="flex flex-col gap-4">
+                            <button className="px-6 py-2 rounded-lg bg-secondary text-white hover:bg-orange-300 transition-colors text-lg">
+                                Забронювати гру
+                            </button>
+
+                            <button 
+                                onClick={handleStartChat}
+                                className="px-6 py-2 rounded-lg bg-secondary text-white hover:bg-orange-300 transition-colors text-lg flex items-center justify-center gap-2"
+                            >
+                                <MessageSquare className="w-5 h-5" />
+                                Чат з власником
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -122,19 +141,19 @@ export default function GamePage() {
                 </div>
 
                 {/* Add a New Comment */}
-                <div className="flex flex-col">
+                <div className="mt-4">
                     <textarea
-                        className="p-4 border border-gray-300 rounded-lg mb-4"
-                        rows="4"
-                        placeholder="Напишіть свій коментар..."
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Напишіть коментар..."
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary"
+                        rows="3"
                     ></textarea>
                     <button
-                        className="self-end px-6 py-2 rounded-lg bg-secondary text-white py-2 rounded-lg hover:bg-orange-300 transition-colors text-lg"
                         onClick={handleCommentSubmit}
+                        className="mt-2 px-4 py-2 bg-secondary text-white rounded-lg hover:bg-orange-300 transition-colors"
                     >
-                        Додати коментар
+                        Відправити
                     </button>
                 </div>
             </div>

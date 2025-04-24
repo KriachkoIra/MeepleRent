@@ -14,6 +14,9 @@ const GamePage = lazy(() => import("./components/GamePage.jsx"));
 const ProfileMyBookings = lazy(() =>
   import("./components/ProfileMyBookings.jsx")
 );
+const ChatPage = lazy(() =>
+  import("./components/ChatPage.jsx")
+);
 const RouteNotFound = lazy(() => import("./components/RouteNotFound.jsx"));
 
 function App() {
@@ -61,6 +64,8 @@ function App() {
           </Route>
           <Route path="add-game" element={<AddGamePage />} />
           <Route path="edit-game/:id" element={<EditGamePage />} />
+          <Route path="chat" element={<ChatPage />} />
+          <Route path="chat/:userId" element={<ChatPage />} />
           <Route path="*" element={<RouteNotFound />} />
         </Routes>
       </BrowserRouter>
