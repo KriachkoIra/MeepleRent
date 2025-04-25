@@ -260,19 +260,24 @@ export default function ChatPage() {
                       <User className="text-gray-500" />
                     </div>
                   )}
-                  <div className="w-full">
-                    <p className="font-medium">
-                      {chat.chatUser?.username}
-                    </p>
-                    {chat.draft && (
-                      <p className="text-sm overflow-hidden truncate text-gray-500 max-w-[150px]">
-                        Чернетка: {chat.draft}
+                  <div className="w-full max-w-[100%] flex flex-col">
+                    <div className="flex justify-between items-center max-w-[100%] w-[50%]">
+                      <p className="font-medium">
+                        {chat.chatUser?.username}
                       </p>
-                    )}{!chat.draft &&
+                    </div>
+                    {chat.draft && (
+                      <div className="flex justify-between items-center text-sm w-full max-w-[full] ">
+                        <p className="text-gray-500 text-overflow-ellipsis overflow-hidden">
+                          Чернетка: {chat.draft}
+                        </p>
+                      </div>
+                    )}
+                    {!chat.draft &&
                       chat.lastMessage && (
-                        <div className="flex justify-between items-center text-sm overflow-hidden w-full">
-                          <p className="truncate">{chat.lastMessage.text}</p>
-                          <p className="text-xs text-gray-500 ml-2 whitespace-nowrap">
+                        <div className="flex justify-between items-center text-sm flex-grow">
+                          <p className="flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap min-w-0 truncate">{chat.lastMessage.text}</p>
+                          <p className="text-xs text-gray-500 ml-2 min-w-[fit-content] whitespace-nowrap text-overflow-ellipsis flex-shrink-0 mr-1">
                             {new Date(chat.lastMessage.createdAt).toLocaleTimeString([], {
                               hour: '2-digit',
                               minute: '2-digit'
