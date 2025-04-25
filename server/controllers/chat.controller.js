@@ -2,6 +2,7 @@ import Chat from "../models/Chat.js";
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import { getUserId } from "./user.controller.js";
+import { notifyRecepient } from "../services/websocket-server.js";
 
 // Get all chats for the current user
 export const getUserChats = async (req, res) => {
@@ -44,6 +45,7 @@ export const getUserChats = async (req, res) => {
 
     return res.json(chatsWithLastMessage);
   } catch (err) {
+    console.error('Error sending message:', err);
     return res.status(500).json({ error: err.message });
   }
 };
@@ -71,6 +73,7 @@ export const getChatMessages = async (req, res) => {
 
     return res.json(messages);
   } catch (err) {
+    console.error('Error sending message:', err);
     return res.status(500).json({ error: err.message });
   }
 };
@@ -81,7 +84,7 @@ export const sendMessage = async (req, res) => {
     const userId = getUserId(req);
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-    const { text, recepientId, chatId } = req.body;
+    let { text, recepientId, chatId } = req.body;
 
     if (!text || !text.trim()) {
       return res.status(400).json({ error: "Message text is required" });
@@ -121,6 +124,12 @@ export const sendMessage = async (req, res) => {
     chat.updatedAt = new Date();
     await chat.save();
 
+    if (!recepientId) {
+      recepientId = chat.participants.find(p => p._id.toString() !== userId.toString());
+    }
+
+    notifyRecepient(recepientId.toString(), userId, text);
+
     // Return the populated message
     const populatedMessage = await Message.findById(newMessage._id)
       .populate("sender", "username avatar")
@@ -128,6 +137,7 @@ export const sendMessage = async (req, res) => {
 
     return res.status(201).json(populatedMessage);
   } catch (err) {
+    console.error('Error sending message:', err);
     return res.status(500).json({ error: err.message });
   }
 };

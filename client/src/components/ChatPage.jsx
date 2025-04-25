@@ -3,17 +3,24 @@ import axios from "axios";
 import { UserContext } from "../context/UserContext";
 import { Send, User } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
+import io from "socket.io-client";
 
 export default function ChatPage() {
   const { id, username, avatar } = useContext(UserContext);
   const { userId: chatUserId } = useParams();
   const navigate = useNavigate();
   const [chats, setChats] = useState([]);
-  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChat, _setSelectedChat] = useState("sfasdf");
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
+  const socket = useRef();
+  const selectedChatRef = useRef(selectedChat);
+  const setSelectedChat = data => {
+    selectedChatRef.current = data;
+    _setSelectedChat(data);
+  };
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -37,6 +44,65 @@ export default function ChatPage() {
     fetchChats();
   }, []);
 
+  // establish connection with socket
+  useEffect(() => {
+    socket.current = io('http://localhost:3001');
+
+    socket.current.on('connect', () => {
+      console.log('Connected to socket');
+      socket.current.emit('authenticate', { userId: id });
+      console.log(socket.current.id);
+    });
+
+    socket.current.on('reconnect', () => {
+      console.log('Rconnected to socket');
+      socket.current.emit('authenticate', { userId: id });
+    });
+
+    // On new message
+    socket.current.on('new_message', (data) => {
+      console.log("Received new message:", data);
+      const setLastMessageAndMoveToTop = (senderId, message) => setChats(prev => {
+        // move chat to the top of the list
+        console.log(prev);
+        const chat = prev.find(chat => chat.chatUser._id === senderId);
+        chat.lastMessage = { text: message, createdAt: data.timestamp };
+        const newChats = prev.filter(chat => chat.chatUser._id !== senderId);
+        newChats.unshift(chat);
+        return newChats;
+      });
+
+      console.log("Selected chat:", selectedChatRef.current);
+      // if message is from selected chat
+      if (data.senderId === selectedChatRef.current?.chatUser?._id) {
+        console.log("Message is from selected chat");
+        setMessages(prev => [...prev, {
+          sender: { _id: data.senderId },
+          text: data.message,
+          createdAt: data.timestamp
+        }]);
+
+        scrollToBottom();
+
+        setLastMessageAndMoveToTop(data.senderId, data.message);
+
+        return;
+      }
+
+      // if message is not from selected chat, update chats state (last message, number of non readmessages)
+      setLastMessageAndMoveToTop(data.senderId, data.message);
+
+
+      // move chat to the top of the list
+    });
+
+    return () => {
+      if (socket.current) {
+        socket.current.disconnect();
+      }
+    };
+  }, []);
+
   // Triggered only on render when userChatId is passed to select chat or create new chat
   useEffect(() => {
     const selectChat = async () => {
@@ -49,6 +115,7 @@ export default function ChatPage() {
 
           if (existingChat) {
             setSelectedChat(existingChat);
+            console.log("Selected existing chat on render:", existingChat);
             return;
           }
 
@@ -66,6 +133,7 @@ export default function ChatPage() {
             isTemporary: true // Flag to indicate this is a temporary chat
           };
           setSelectedChat(tempChat);
+          console.log("Selected temp chat on render:", tempChat);
 
           // You can optionally add this to the chats list
           setChats(prevChats => [tempChat, ...prevChats]);
@@ -99,6 +167,7 @@ export default function ChatPage() {
     };
 
     fetchMessages();
+    console.log("Selected chat on fetch messages:", selectedChat);
   }, [selectedChat]);
 
   useEffect(() => {
@@ -117,6 +186,8 @@ export default function ChatPage() {
           recepientId: selectedChat.chatUser._id
         });
         selectedChat._id = responseMessage.data.chat._id;
+        selectedChat.lastMessage = { text: newMessage, createdAt: responseMessage.data.createdAt };
+        setSelectedChat(selectedChat);
       } else {
         await axios.post(`/messages`, {
           text: newMessage,
@@ -144,6 +215,7 @@ export default function ChatPage() {
     });
     setNewMessage(chat.draft);
     setChats(newChats);
+    console.log("Selected chat:", chat);
     setSelectedChat(chat);
     if (chatUserId) {
       navigate("/chat");
@@ -170,7 +242,7 @@ export default function ChatPage() {
             {chats.map((chat) => (
               <div
                 key={chat._id}
-                className={`p-3 rounded-lg cursor-pointer ${selectedChat?._id === chat._id
+                className={`p-3 rounded-lg cursor-pointer overflow-hidden ${selectedChat?._id === chat._id
                   ? "bg-secondary text-white"
                   : "hover:bg-gray-100"
                   }`}
@@ -188,20 +260,26 @@ export default function ChatPage() {
                       <User className="text-gray-500" />
                     </div>
                   )}
-                  <div>
+                  <div className="w-full">
                     <p className="font-medium">
                       {chat.chatUser?.username}
                     </p>
                     {chat.draft && (
-                      <p className="text-sm truncate text-gray-500 max-w-[150px]">
+                      <p className="text-sm overflow-hidden truncate text-gray-500 max-w-[150px]">
                         Чернетка: {chat.draft}
                       </p>
-                    ) ||
+                    )}{!chat.draft &&
                       chat.lastMessage && (
-                      <p className="text-sm truncate max-w-[150px]">
-                        {chat.lastMessage.text}
-                      </p>
-                    )}
+                        <div className="flex justify-between items-center text-sm overflow-hidden w-full">
+                          <p className="truncate">{chat.lastMessage.text}</p>
+                          <p className="text-xs text-gray-500 ml-2 whitespace-nowrap">
+                            {new Date(chat.lastMessage.createdAt).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>

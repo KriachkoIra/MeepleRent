@@ -14,11 +14,14 @@ import reviewsRouter from "./routes/reviews.js";
 import chatsRouter from "./routes/chats.js";
 import messagesRouter from "./routes/messages.js";
 import { configureCloudinary } from "./cloudinary.js";
+import { setupSocket } from "./services/websocket-server.js";
 
 dotenv.config();
 configureCloudinary();
 
 const app = express();
+
+const server = setupSocket(app);
 
 app.use(express.json());
 app.use(bodyParser.json({ limit: "50mb" }));
@@ -26,7 +29,7 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(cookieParser());
 app.use(
     cors({
-        origin: [process.env.CLIENT_URL || "http://localhost:3001"],
+        origin: [process.env.CLIENT_URL || "http://localhost:5173"],
         credentials: true,
     })
 );
@@ -45,4 +48,4 @@ app.use("/reviews", reviewsRouter);
 app.use("/chats", chatsRouter);
 app.use("/messages", messagesRouter);
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
