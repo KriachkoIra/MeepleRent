@@ -49,7 +49,7 @@ export default function GamePage() {
   return (
     <>
       {isShowDatesModal && (
-        <DatesModal setIsShowDatesModal={setIsShowDatesModal} />
+        <DatesModal setIsShowDatesModal={setIsShowDatesModal} game={game} />
       )}
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="bg--color-background  overflow-hidden">
@@ -182,9 +182,21 @@ export default function GamePage() {
   );
 }
 
-function DatesModal({ setIsShowDatesModal }) {
+function DatesModal({ setIsShowDatesModal, game }) {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const navigate = useNavigate();
+
+  const handleMakeReservation = async () => {
+    // send API request to make reservation
+    await axios.post(`/bookings`, {
+      gameId: game._id,
+      startDate: startDate,
+      endDate: endDate,
+    });
+    setIsShowDatesModal(false);
+    navigate(`/chat/${game.owner._id}`);
+  }
 
   return (
     <div className="fixed top-0 z-5 h-full w-full flex items-center justify-center bg-black/50 shadow-lg">
@@ -217,7 +229,7 @@ function DatesModal({ setIsShowDatesModal }) {
           >
             Скасувати
           </button>
-          <button className="bg-secondary text-white py-2 px-5 rounded-md hover:opacity-85">
+          <button onClick={handleMakeReservation} className="bg-secondary text-white py-2 px-5 rounded-md hover:opacity-85">
             Забронювати
           </button>
         </div>

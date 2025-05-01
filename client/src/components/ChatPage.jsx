@@ -1,13 +1,14 @@
 import { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import { UserContext } from "../context/UserContext";
-import { Send, User } from "lucide-react";
+import { Send, User, Check, X, Clock } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import io from "socket.io-client";
 
 export default function ChatPage() {
   const { id, username, avatar } = useContext(UserContext);
-  const { userId: chatUserId } = useParams();
+  const { userId: paramUserId } = useParams();
+  const [chatUserId, setChatUserId] = useState(paramUserId);
   const navigate = useNavigate();
   const [chats, setChats] = useState([]);
   const [selectedChat, _setSelectedChat] = useState("sfasdf");
@@ -17,6 +18,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef(null);
   const socket = useRef();
   const selectedChatRef = useRef(selectedChat);
+  const [processingRequest, setProcessingRequest] = useState(false);
   const setSelectedChat = data => {
     selectedChatRef.current = data;
     _setSelectedChat(data);
@@ -49,22 +51,18 @@ export default function ChatPage() {
     socket.current = io('http://localhost:3001');
 
     socket.current.on('connect', () => {
-      console.log('Connected to socket');
       socket.current.emit('authenticate', { userId: id });
-      console.log(socket.current.id);
     });
 
     socket.current.on('reconnect', () => {
-      console.log('Rconnected to socket');
       socket.current.emit('authenticate', { userId: id });
     });
 
     // On new message
     socket.current.on('new_message', (data) => {
-      console.log("Received new message:", data);
       const setLastMessageAndMoveToTop = (senderId, message) => setChats(prev => {
         // move chat to the top of the list
-        console.log(prev);
+        // todo: update if type is booking_request, booking_confirmation, booking_cancellation
         const chat = prev.find(chat => chat.chatUser._id === senderId);
         chat.lastMessage = { text: message, createdAt: data.timestamp };
         const newChats = prev.filter(chat => chat.chatUser._id !== senderId);
@@ -72,10 +70,8 @@ export default function ChatPage() {
         return newChats;
       });
 
-      console.log("Selected chat:", selectedChatRef.current);
       // if message is from selected chat
       if (data.senderId === selectedChatRef.current?.chatUser?._id) {
-        console.log("Message is from selected chat");
         setMessages(prev => [...prev, {
           sender: { _id: data.senderId },
           text: data.message,
@@ -105,22 +101,22 @@ export default function ChatPage() {
 
   // Triggered only on render when userChatId is passed to select chat or create new chat
   useEffect(() => {
+    const currentChatUserId = chatUserId || paramUserId;
     const selectChat = async () => {
-      if (chatUserId && chatUserId !== id) {
+      if (currentChatUserId && currentChatUserId !== id) {
         try {
           // if chat already exists, select it
           const existingChat = chats.find(chat =>
-            chat.chatUser._id === chatUserId
+            chat.chatUser._id === currentChatUserId
           );
 
           if (existingChat) {
+            console.log("2");
             setSelectedChat(existingChat);
-            console.log("Selected existing chat on render:", existingChat);
             return;
           }
 
-          const chatUser = await axios.get(`/users/${chatUserId}`);
-          console.log(chatUser.data);
+          const chatUser = await axios.get(`/users/${currentChatUserId}`);
 
           const tempChat = {
             _id: 'temp_' + Date.now(),
@@ -133,7 +129,6 @@ export default function ChatPage() {
             isTemporary: true // Flag to indicate this is a temporary chat
           };
           setSelectedChat(tempChat);
-          console.log("Selected temp chat on render:", tempChat);
 
           // You can optionally add this to the chats list
           setChats(prevChats => [tempChat, ...prevChats]);
@@ -143,31 +138,33 @@ export default function ChatPage() {
       }
     };
 
-    if (!loading && chatUserId) {
+    console.log("out", loading, currentChatUserId);
+    if (!loading && currentChatUserId) {
       selectChat();
+      console.log("1");
     }
   }, [chatUserId, loading]);
 
-  // Triggered after setSelectedChat() and fetches messages
-  useEffect(() => {
-    const fetchMessages = async () => {
+  const fetchMessages = async () => {
+    try {
       if (selectedChat) {
         if (selectedChat.isTemporary) {
           setMessages([]);
           return;
         }
         document.title = `Чат з ${selectedChat.chatUser.username} | MeepleRent`;
-        try {
-          const response = await axios.get(`/chats/${selectedChat._id}/messages`);
-          setMessages(response.data);
-        } catch (error) {
-          console.error("Error fetching messages:", error);
-        }
+        const response = await axios.get(`/chats/${selectedChat._id}/messages`);
+        setMessages(response.data);
+        console.log("Messages:", response.data);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching messages: ", error.message);
+    }
+  };
+  // Triggered after setSelectedChat() and fetches messages
+  useEffect(() => {
 
     fetchMessages();
-    console.log("Selected chat on fetch messages:", selectedChat);
   }, [selectedChat]);
 
   useEffect(() => {
@@ -205,6 +202,12 @@ export default function ChatPage() {
     }
   };
 
+  useEffect(() => {
+    if (chatUserId) {
+      navigate(`/chat/${chatUserId}`);
+    }
+  }, [chatUserId]);
+
   const handleChatSelect = (chat) => {
     // Update draft for the selected chat
     const newChats = chats.map(chat => {
@@ -215,12 +218,25 @@ export default function ChatPage() {
     });
     setNewMessage(chat.draft);
     setChats(newChats);
-    console.log("Selected chat:", chat);
     setSelectedChat(chat);
-    if (chatUserId) {
-      navigate("/chat");
-    }
+    setChatUserId(chat.chatUser._id);
   };
+
+  const handleApproveBookingRequest = async (message) => {
+    await axios.post(`/bookings/${message.booking._id}`, {
+      messageId: message._id
+    });
+
+    fetchMessages();
+  }
+
+  const handleCancelBookingRequest = async (message) => {
+    await axios.post(`/bookings/${message.booking._id}/cancel`, {
+      messageId: message._id
+    });
+
+    fetchMessages();
+  }
 
   if (loading) {
     return (
@@ -260,19 +276,24 @@ export default function ChatPage() {
                       <User className="text-gray-500" />
                     </div>
                   )}
-                  <div className="w-full">
-                    <p className="font-medium">
-                      {chat.chatUser?.username}
-                    </p>
-                    {chat.draft && (
-                      <p className="text-sm overflow-hidden truncate text-gray-500 max-w-[150px]">
-                        Чернетка: {chat.draft}
+                  <div className="w-full max-w-[100%] flex flex-col">
+                    <div className="flex justify-between items-center max-w-[100%] w-[50%]">
+                      <p className="font-medium">
+                        {chat.chatUser?.username}
                       </p>
-                    )}{!chat.draft &&
+                    </div>
+                    {chat.draft && (
+                      <div className="flex justify-between items-center text-sm w-full max-w-[full] ">
+                        <p className="text-gray-500 text-overflow-ellipsis overflow-hidden">
+                          Чернетка: {chat.draft}
+                        </p>
+                      </div>
+                    )}
+                    {!chat.draft &&
                       chat.lastMessage && (
-                        <div className="flex justify-between items-center text-sm overflow-hidden w-full">
-                          <p className="truncate">{chat.lastMessage.text}</p>
-                          <p className="text-xs text-gray-500 ml-2 whitespace-nowrap">
+                        <div className="flex justify-between items-center text-sm flex-grow">
+                          <p className="flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap min-w-0 truncate">{chat.lastMessage.text}</p>
+                          <p className="text-xs text-gray-500 ml-2 min-w-[fit-content] whitespace-nowrap text-overflow-ellipsis flex-shrink-0 mr-1">
                             {new Date(chat.lastMessage.createdAt).toLocaleTimeString([], {
                               hour: '2-digit',
                               minute: '2-digit'
@@ -324,7 +345,113 @@ export default function ChatPage() {
                       : "bg-gray-100"
                       }`}
                   >
-                    <p>{message.text}</p>
+                    {message.type === "booking_request" && (
+                      <div className="flex flex-col mr-3">
+                        <p className="font-semibold">Запит на оренду надіслано. Очікуємо підтвердження 🕒</p>
+                        {message.booking && (
+                          <div className="mt-2 space-y-1">
+                            <span className="text-sm">
+                              {message.booking.game.name}
+                            </span>
+                            <span className="text-sm">
+                              &nbsp;з&nbsp;
+                            </span>
+                            <span className="text-sm">
+                              {new Date(message.booking.startDate).toLocaleDateString('uk-UA', {
+                                day: 'numeric',
+                              })}
+                              <span className="text-sm">
+                                &nbsp;по
+                              </span> {new Date(message.booking.endDate).toLocaleDateString('uk-UA', {
+                                day: 'numeric',
+                                month: 'long'
+                              })}
+                            </span>
+                          </div>
+                        )}
+                        {message.sender._id !== id && (
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => handleApproveBookingRequest(message)}
+                              disabled={processingRequest}
+                              className="flex items-center gap-1 w-30 justify-center px-4 py-1 bg-green-400 hover:bg-green-500 text-white rounded text-sm transition-colors disabled:opacity-50"
+                            >
+                              Підтвердити
+                            </button>
+                            <button
+                              onClick={() => handleCancelBookingRequest(message)}
+                              disabled={processingRequest}
+                              className="flex items-center gap-1 px-2 w-30 justify-center py-1 bg-red-400 hover:bg-red-500 text-white rounded text-sm transition-colors disabled:opacity-50"
+                            >
+                              Скасувати
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {message.type === "booking_confirmation" && (
+                      <div className="flex flex-col mr-3">
+                        <p className="font-semibold">
+                          {message.sender._id === id
+                            ? `${message.sender.username} підтвердив запит на оренду ✅`
+                            : "Ви підтвердили запит на оренду ✅"}
+                        </p>
+                        {message.booking && (
+                          <div className="mt-2 space-y-1">
+                            <span className="text-sm">
+                              {message.booking.game.name}
+                            </span>
+                            <span className="text-sm">
+                              &nbsp;з&nbsp;
+                            </span>
+                            <span className="text-sm">
+                              {new Date(message.booking.startDate).toLocaleDateString('uk-UA', {
+                                day: 'numeric',
+                              })}
+                              <span className="text-sm">
+                                &nbsp;по
+                              </span> {new Date(message.booking.endDate).toLocaleDateString('uk-UA', {
+                                day: 'numeric',
+                                month: 'long'
+                              })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {message.type === "booking_cancellation" && (
+                      <div className="flex flex-col">
+                        <p className="font-semibold">
+                          {message.sender._id === id
+                            ? `${message.sender.username} скасував запит на оренду ❌`
+                            : "Ви скасували запит на оренду ❌"}
+                        </p>
+                        {message.booking && (
+                          <div className="mt-2 space-y-1">
+                            <span className="text-sm">
+                              {message.booking.game.name}
+                            </span>
+                            <span className="text-sm">
+                              &nbsp;з&nbsp;
+                            </span>
+                            <span className="text-sm">
+                              {new Date(message.booking.startDate).toLocaleDateString('uk-UA', {
+                                day: 'numeric',
+                              })}
+                              <span className="text-sm">
+                                &nbsp;по
+                              </span> {new Date(message.booking.endDate).toLocaleDateString('uk-UA', {
+                                day: 'numeric',
+                                month: 'long'
+                              })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {message.type === "text" && (
+                      <p>{message.text}</p>
+                    )}
                     <p className="text-xs mt-1 opacity-70">
                       {new Date(message.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
