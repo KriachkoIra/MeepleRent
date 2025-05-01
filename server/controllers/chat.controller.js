@@ -69,6 +69,12 @@ export const getChatMessages = async (req, res) => {
     // Get all messages for this chat
     const messages = await Message.find({ chat: chatId })
       .populate("sender", "username avatar")
+      .populate("chat", "_id")
+      .populate({
+        path: "booking",
+        select: "_id endDate startDate status",
+        populate: { path: "game", select: "_id name" }
+      })
       .sort({ createdAt: 1 });
 
     return res.json(messages);
@@ -77,6 +83,37 @@ export const getChatMessages = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+// find or create a chat
+const findOrCreateChat = async (userId, recepientId) => {
+  let chat = await Chat.findOne({
+    participants: { $all: [userId, recepientId] }
+  });
+  if (!chat) {
+    chat = new Chat({
+      participants: [userId, recepientId]
+    });
+    await chat.save();
+  }
+  return chat;
+}
+
+const sendMessageToChat = async (chat, senderId, recepientId, type, bookingId, text) => {
+  const newMessage = new Message({
+    chat: chat._id,
+    sender: senderId,
+    text: text?.trim(),
+    type: type,
+    booking: bookingId
+  });
+
+  await newMessage.save();
+
+  // Update the chat's updatedAt timestamp
+  chat.updatedAt = new Date();
+  await chat.save();
+  notifyRecepient(recepientId.toString(), senderId, text, type);
+}
 
 // Send a message in a chat
 export const sendMessage = async (req, res) => {
@@ -101,39 +138,24 @@ export const sendMessage = async (req, res) => {
       if (!recepient) {
         return res.status(404).json({ error: "Recepient not found" });
       }
-      chat = await Chat.findOne({
-        participants: { $all: [userId, recepientId] }
-      });
-      if (!chat) {
-        chat = new Chat({
-          participants: [userId, recepientId]
-        });
-        await chat.save();
-      }
+      chat = await findOrCreateChat(userId, recepientId);
     }
-
-    const newMessage = new Message({
-      chat: chat._id,
-      sender: userId,
-      text: text.trim()
-    });
-
-    await newMessage.save();
-
-    // Update the chat's updatedAt timestamp
-    chat.updatedAt = new Date();
-    await chat.save();
 
     if (!recepientId) {
       recepientId = chat.participants.find(p => p._id.toString() !== userId.toString());
     }
 
-    notifyRecepient(recepientId.toString(), userId, text);
+    sendMessageToChat(chat, userId, recepientId, text);
 
     // Return the populated message
     const populatedMessage = await Message.findById(newMessage._id)
       .populate("sender", "username avatar")
-      .populate("chat", "_id");
+      .populate("chat", "_id")
+      .populate({
+        path: "booking",
+        select: "_id endDate startDate status",
+        populate: { path: "game", select: "_id name" }
+      });
 
     return res.status(201).json(populatedMessage);
   } catch (err) {
@@ -141,3 +163,44 @@ export const sendMessage = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+export const sendBookingRequestMessage = async (gameOwnerId, userId, bookingId) => {
+  // todo: add reservation details to message
+  const recepient = await User.findById(gameOwnerId);
+
+  if (!recepient) {
+    return res.status(404).json({ error: "Game owner not found" });
+  }
+
+  const chat = await findOrCreateChat(userId, gameOwnerId);
+  sendMessageToChat(chat, userId, gameOwnerId, "booking_request", bookingId);
+  // notifyRecepient(userId, gameOwnerId, "", "booking_request");
+}
+
+export const sendBookingConfirmationMessage = async (userId, gameOwnerId, bookingId, type) => {
+  const recepient = await User.findById(gameOwnerId);
+  console.log(userId, gameOwnerId, bookingId);
+
+  if (!recepient) {
+    return res.status(404).json({ error: "Game owner not found" });
+  }
+
+  const chat = await findOrCreateChat(userId, gameOwnerId);
+  sendMessageToChat(chat, userId, gameOwnerId, type, bookingId);
+}
+
+export const sendBookingCancellationMessage = async (userId, gameOwnerId, bookingId) => {
+  const recepient = await User.findById(gameOwnerId);
+  console.log(userId, gameOwnerId, bookingId);
+
+  if (!recepient) {
+    return res.status(404).json({ error: "Game owner not found" });
+  }
+
+  const chat = await findOrCreateChat(userId, gameOwnerId);
+  sendMessageToChat(chat, userId, gameOwnerId, "booking_cancellation", bookingId);
+}
+
+export const deleteMessage = async (messageId) => {
+  await Message.findByIdAndDelete(messageId);
+}

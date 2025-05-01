@@ -16,11 +16,9 @@ export const setupSocket = (app) => {
   });
 
   io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
 
     // authenticate user
     socket.on('authenticate', (data) => {
-      console.log('User authenticated:', data.userId);
       connectedUsers.set(data.userId, socket.id);
       socket.userId = data.userId;
     });
@@ -41,23 +39,20 @@ export const setupSocket = (app) => {
       if (socket.userId) {
         connectedUsers.delete(socket.userId);
       }
-      console.log('User disconnected:', socket.id);
     });
   });
 
   return server;
 }
 
-export const notifyRecepient = (recepientId, senderId, text) => {
+export const notifyRecepient = (recepientId, senderId, text, type) => {
   const recipientSocketId = connectedUsers.get(recepientId);
-  console.log('Recipient id:', recepientId);
-  console.log('Connected users:', connectedUsers);
 
   if (recipientSocketId) {
-    console.log('Sending message to user:', recipientSocketId);
     io.to(recipientSocketId).emit('new_message', {
       senderId,
       message: text,
+      type,
       timestamp: new Date()
     });
   }

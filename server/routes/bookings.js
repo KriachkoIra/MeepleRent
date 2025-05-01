@@ -10,6 +10,6 @@ const router = express.Router();
 
 router.route("/").post(createBooking).get(getUserBookings);
 router.route("/:id").post(confirmBooking);
-router.route("/:id").delete(cancelBooking);
+router.route("/:id/cancel").post(cancelBooking);
 
 export default router;
