@@ -30,7 +30,7 @@ const registerUser = async function (req, res) {
           secure: true,
         })
         .status(201)
-        .json({ id: createdUser._id, username });
+        .json({ id: createdUser._id, username, email });
     } catch (err) {
       res.status(401).json(err.message);
     }
