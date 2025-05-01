@@ -1,4 +1,4 @@
-import { useContext, useState, useRef } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { UserContext } from "../context/UserContext.jsx";
 import { Link, Outlet } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +21,10 @@ export default function UserPage() {
 
   const navigate = useNavigate();
   const fileInputRef = useRef(null); // 🎯 Посилання на інпут
+
+  useEffect(() => {
+    console.log(username, email);
+  }, []);
 
   const handleAvatarClick = () => {
     fileInputRef.current.click(); // 🔥 Викликає вибір файлу

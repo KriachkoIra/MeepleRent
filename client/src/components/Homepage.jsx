@@ -5,7 +5,6 @@ import { CircleGauge, Clock, PhoneCall, Users } from "lucide-react";
 import { DIFFICULTY_MAP } from "../constants";
 import { Link } from "react-router-dom";
 
-
 export default function Homepage() {
   const { username } = useContext(UserContext);
   const [games, setGames] = useState([]);
@@ -124,57 +123,57 @@ function Game({
   },
 }) {
   return (
-      <div className="mb-4">
-        <Link
-            to={`/game/${_id}`}
-            className="my-game m-auto min-md w-70 bg-background rounded-xl py-5 px-3 flex flex-col h-full transition hover:shadow-lg"
-        >
-          <div
-              className="my-game__picture w-64 h-64 bg-no-repeat bg-center"
-              style={{
-                backgroundImage: `url(${image})`,
-                backgroundSize: "cover",
-              }}
-          ></div>
+    <div className="mb-4">
+      <Link
+        to={`/game/${_id}`}
+        className="my-game m-auto min-md w-70 bg-background rounded-xl py-5 px-4 flex flex-col h-full transition hover:shadow-lg"
+      >
+        <div
+          className="my-game__picture w-64 h-64 bg-no-repeat bg-center"
+          style={{
+            backgroundImage: `url(${image})`,
+            backgroundSize: "cover",
+          }}
+        ></div>
 
-          <div className="flex flex-col flex-grow">
-            <div className="my-game__title-desc-wrapper w-full">
-              <div className="flex items-center justify-between mt-5">
-                <div className="my-game__title text-xl line-clamp-2">{name}</div>
-                <div className="my-game__price text-gray-600 font-medium">
-                  {price} грн/день
+        <div className="flex flex-col flex-grow">
+          <div className="my-game__title-desc-wrapper w-full">
+            <div className="flex items-center justify-between mt-5">
+              <div className="my-game__title text-xl line-clamp-2">{name}</div>
+              <div className="my-game__price text-gray-600 font-medium">
+                {price} грн/день
+              </div>
+            </div>
+            <div className="my-game__desc mt-2">{description}</div>
+          </div>
+
+          <div className="flex-grow"></div>
+
+          <div className="bottom_data mt-auto">
+            <div className="my-game__time-diff-players-wrapper w-full mt-4 flex justify-between">
+              <div className="my-game__time flex flex-col items-center">
+                <Clock />
+                <div className="my-game__time-title">Час</div>
+                <div className="my-game__time">{time} хв</div>
+              </div>
+              <div className="my-game__difficulty flex flex-col items-center">
+                <CircleGauge />
+                <div className="my-game__difficulty-title">Складність</div>
+                <div className="my-game__difficulty-value">
+                  {DIFFICULTY_MAP[difficulty]}
                 </div>
               </div>
-              <div className="my-game__desc mt-2">{description}</div>
-            </div>
-
-            <div className="flex-grow"></div>
-
-            <div className="bottom_data mt-auto">
-              <div className="my-game__time-diff-players-wrapper w-full my-4 flex justify-between">
-                <div className="my-game__time flex flex-col items-center">
-                  <Clock />
-                  <div className="my-game__time-title">Час</div>
-                  <div className="my-game__time">{time} хв</div>
-                </div>
-                <div className="my-game__difficulty flex flex-col items-center">
-                  <CircleGauge />
-                  <div className="my-game__difficulty-title">Складність</div>
-                  <div className="my-game__difficulty-value">
-                    {DIFFICULTY_MAP[difficulty]}
-                  </div>
-                </div>
-                <div className="my-game__players flex flex-col items-center">
-                  <Users />
-                  <div className="my-game__players-title">Гравці</div>
-                  <div className="my-game__players-value">
-                    {minPlayers} - {maxPlayers}
-                  </div>
+              <div className="my-game__players flex flex-col items-center">
+                <Users />
+                <div className="my-game__players-title">Гравці</div>
+                <div className="my-game__players-value">
+                  {minPlayers} - {maxPlayers}
                 </div>
               </div>
             </div>
           </div>
-        </Link>
-      </div>
+        </div>
+      </Link>
+    </div>
   );
 }

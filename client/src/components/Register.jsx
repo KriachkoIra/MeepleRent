@@ -21,6 +21,7 @@ export default function Register() {
     await axios
       .post(link, { email, username, password })
       .then(async (res) => {
+        console.log(res.data);
         setId(res.data.id);
         setEmail(res.data.email);
         setAvatar(res.data.avatar);
