@@ -37,7 +37,8 @@ export const getUserChats = async (req, res) => {
           lastMessage: lastMessage ? {
             text: lastMessage.text,
             sender: lastMessage.sender,
-            createdAt: lastMessage.createdAt
+            createdAt: lastMessage.createdAt,
+            type: lastMessage.type
           } : null
         };
       })
@@ -98,13 +99,14 @@ const findOrCreateChat = async (userId, recepientId) => {
   return chat;
 }
 
-const sendMessageToChat = async (chat, senderId, recepientId, type, bookingId, text) => {
+const sendMessageToChat = async (chat, senderId, recepientId, type, booking, text) => {
+  console.log("message senderId", senderId.toString ? senderId.toString() : senderId)
   const newMessage = new Message({
     chat: chat._id,
-    sender: senderId,
+    sender: senderId.toString ? senderId.toString() : senderId,
     text: text?.trim(),
     type: type,
-    booking: bookingId
+    booking: booking?._id
   });
 
   await newMessage.save();
@@ -112,7 +114,8 @@ const sendMessageToChat = async (chat, senderId, recepientId, type, bookingId, t
   // Update the chat's updatedAt timestamp
   chat.updatedAt = new Date();
   await chat.save();
-  notifyRecepient(recepientId.toString(), senderId, text, type);
+  notifyRecepient(recepientId.toString ? recepientId.toString() : recepientId, senderId, text, type, booking);
+  return newMessage;
 }
 
 // Send a message in a chat
@@ -145,7 +148,7 @@ export const sendMessage = async (req, res) => {
       recepientId = chat.participants.find(p => p._id.toString() !== userId.toString());
     }
 
-    sendMessageToChat(chat, userId, recepientId, text);
+    const newMessage = await sendMessageToChat(chat, userId, recepientId, "text", null, text);
 
     // Return the populated message
     const populatedMessage = await Message.findById(newMessage._id)
@@ -164,7 +167,7 @@ export const sendMessage = async (req, res) => {
   }
 };
 
-export const sendBookingRequestMessage = async (gameOwnerId, userId, bookingId) => {
+export const sendBookingRequestMessage = async (gameOwnerId, userId, booking) => {
   // todo: add reservation details to message
   const recepient = await User.findById(gameOwnerId);
 
@@ -173,32 +176,32 @@ export const sendBookingRequestMessage = async (gameOwnerId, userId, bookingId) 
   }
 
   const chat = await findOrCreateChat(userId, gameOwnerId);
-  sendMessageToChat(chat, userId, gameOwnerId, "booking_request", bookingId);
+  sendMessageToChat(chat, userId, gameOwnerId, "booking_request", booking);
   // notifyRecepient(userId, gameOwnerId, "", "booking_request");
 }
 
-export const sendBookingConfirmationMessage = async (userId, gameOwnerId, bookingId, type) => {
+export const sendBookingConfirmationMessage = async (userId, gameOwnerId, booking, type) => {
   const recepient = await User.findById(gameOwnerId);
-  console.log(userId, gameOwnerId, bookingId);
 
   if (!recepient) {
     return res.status(404).json({ error: "Game owner not found" });
   }
 
   const chat = await findOrCreateChat(userId, gameOwnerId);
-  sendMessageToChat(chat, userId, gameOwnerId, type, bookingId);
+
+  // creating message and notifying user
+  await sendMessageToChat(chat, gameOwnerId, userId, type, booking);
 }
 
-export const sendBookingCancellationMessage = async (userId, gameOwnerId, bookingId) => {
+export const sendBookingCancellationMessage = async (userId, gameOwnerId, booking) => {
   const recepient = await User.findById(gameOwnerId);
-  console.log(userId, gameOwnerId, bookingId);
 
   if (!recepient) {
     return res.status(404).json({ error: "Game owner not found" });
   }
 
   const chat = await findOrCreateChat(userId, gameOwnerId);
-  sendMessageToChat(chat, userId, gameOwnerId, "booking_cancellation", bookingId);
+  await sendMessageToChat(chat, gameOwnerId, userId, "booking_cancellation", booking);
 }
 
 export const deleteMessage = async (messageId) => {

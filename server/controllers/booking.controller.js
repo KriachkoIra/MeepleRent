@@ -2,6 +2,8 @@ import Booking from "../models/Booking.js";
 import Game from "../models/Game.js";
 import { getUserId } from "./user.controller.js";
 import { sendBookingConfirmationMessage, sendBookingRequestMessage, sendBookingCancellationMessage, deleteMessage } from "./chat.controller.js";
+import Message from "../models/Message.js";
+import { notifyBookingRequestMessageHandled } from "../services/websocket-server.js";
 
 
 const getUserBookings = async (req, res) => {
@@ -62,11 +64,12 @@ const createBooking = async (req, res) => {
     });
 
     await booking.save();
+    booking.populate("game", "owner");
     game.isAvailable = false;
     await game.save();
 
     // send an message to the chat
-    sendBookingRequestMessage(game.owner, userId, booking._id);
+    sendBookingRequestMessage(game.owner, userId, booking);
 
     return res.status(201).json({
       id: booking._id,
@@ -96,14 +99,23 @@ const cancelBooking = async (req, res) => {
 
     booking.status = "cancelled";
     await booking.save();
+    booking.populate("game", "owner");
 
     const game = await Game.findById(booking.game);
     game.isAvailable = true;
     await game.save();
 
-    console.log(messageId);
-    deleteMessage(messageId);
-    sendBookingCancellationMessage(booking.user, game.owner, booking._id, "booking_cancellation");
+    // deleteMessage(messageId);
+    console.log("messageId of the booking confirmation", messageId);
+    const message = await Message.findById(messageId);
+    if (message) {
+      console.log("message found", message);
+      message.type = "handled_booking_request";
+      await message.save();
+    }
+
+    sendBookingCancellationMessage(booking.user, game.owner, booking, "booking_cancellation");
+    notifyBookingRequestMessageHandled(messageId);
 
     return res.json({ message: "Booking cancelled successfully" });
   } catch (err) {
@@ -131,9 +143,19 @@ const confirmBooking = async (req, res) => {
 
     booking.status = "confirmed";
     await booking.save();
+    booking.populate("game", "owner");
 
-    deleteMessage(messageId);
-    sendBookingConfirmationMessage(booking.user, game.owner, booking._id, "booking_confirmation");
+    // deleteMessage(messageId);
+    console.log("messageId of the booking confirmation", messageId);
+    const message = await Message.findById(messageId);
+    if (message) {
+      console.log("message found", message);
+      message.type = "handled_booking_request";
+      await message.save();
+    }
+
+    sendBookingConfirmationMessage(booking.user, game.owner, booking, "booking_confirmation");
+    notifyBookingRequestMessageHandled(messageId);
 
     return res.json({ message: "Booking confirmed successfully" });
   } catch (err) {

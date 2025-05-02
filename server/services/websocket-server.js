@@ -45,15 +45,25 @@ export const setupSocket = (app) => {
   return server;
 }
 
-export const notifyRecepient = (recepientId, senderId, text, type) => {
+export const notifyRecepient = (recepientId, senderId, text, type, booking) => {
   const recipientSocketId = connectedUsers.get(recepientId);
-
+  
   if (recipientSocketId) {
     io.to(recipientSocketId).emit('new_message', {
       senderId,
       message: text,
       type,
-      timestamp: new Date()
+      timestamp: new Date(),
+      ...(booking && {booking})
+    });
+  }
+}
+
+export const notifyBookingRequestMessageHandled = (recepientId, messageId) => {
+  const recipientSocketId = connectedUsers.get(recepientId);
+  if (recipientSocketId) {
+    io.to(recipientSocketId).emit('booking_request_message_handled', {
+      messageId
     });
   }
 }

@@ -35,7 +35,10 @@ export default function ChatPage() {
     const fetchChats = async () => {
       try {
         const response = await axios.get("/chats");
-        setChats(response.data);
+        setChats(response.data.map(chat => ({
+          ...chat,
+          lastMessage: { text: getTextFromMessageType(chat.lastMessage), ...chat.lastMessage }
+        })));
         setLoading(false);
       } catch (error) {
         console.error("Error fetching chats:", error);
@@ -60,36 +63,46 @@ export default function ChatPage() {
 
     // On new message
     socket.current.on('new_message', (data) => {
-      const setLastMessageAndMoveToTop = (senderId, message) => setChats(prev => {
+      const setLastMessageAndMoveToTop = (senderId, type, message) => setChats(prev => {
         // move chat to the top of the list
-        // todo: update if type is booking_request, booking_confirmation, booking_cancellation
         const chat = prev.find(chat => chat.chatUser._id === senderId);
-        chat.lastMessage = { text: message, createdAt: data.timestamp };
+        const text = getTextFromMessageType({ text: message, type: type, sender: { _id: senderId, username: chat.chatUser.username } })
+        chat.lastMessage = { text: text, type, sender: { _id: senderId, username: chat.chatUser.username }, createdAt: data.timestamp };
         const newChats = prev.filter(chat => chat.chatUser._id !== senderId);
         newChats.unshift(chat);
         return newChats;
       });
-
       // if message is from selected chat
       if (data.senderId === selectedChatRef.current?.chatUser?._id) {
         setMessages(prev => [...prev, {
-          sender: { _id: data.senderId },
+          sender: { _id: data.senderId, username: selectedChatRef.current?.chatUser?.username },
+          type: data.type,
           text: data.message,
-          createdAt: data.timestamp
+          createdAt: data.timestamp,
+          ...data
         }]);
 
         scrollToBottom();
 
-        setLastMessageAndMoveToTop(data.senderId, data.message);
+        setLastMessageAndMoveToTop(data.senderId, data.type, data.message);
 
         return;
       }
 
       // if message is not from selected chat, update chats state (last message, number of non readmessages)
-      setLastMessageAndMoveToTop(data.senderId, data.message);
-
+      setLastMessageAndMoveToTop(data.senderId, data.type, data.message);
 
       // move chat to the top of the list
+    });
+
+    socket.current.on('booking_request_message_handled', ({ messageId }) => {
+      setMessages(prev =>
+        prev.filter(m => {
+          if (m._id !== messageId) {
+            m.type = "handled_booking_request";
+          }
+          return m;
+        }));
     });
 
     return () => {
@@ -111,7 +124,6 @@ export default function ChatPage() {
           );
 
           if (existingChat) {
-            console.log("2");
             setSelectedChat(existingChat);
             return;
           }
@@ -138,13 +150,12 @@ export default function ChatPage() {
       }
     };
 
-    console.log("out", loading, currentChatUserId);
     if (!loading && currentChatUserId) {
       selectChat();
-      console.log("1");
     }
   }, [chatUserId, loading]);
 
+  // fetch messages of current chat
   const fetchMessages = async () => {
     try {
       if (selectedChat) {
@@ -186,10 +197,11 @@ export default function ChatPage() {
         selectedChat.lastMessage = { text: newMessage, createdAt: responseMessage.data.createdAt };
         setSelectedChat(selectedChat);
       } else {
-        await axios.post(`/messages`, {
+        const responseMessage = await axios.post(`/messages`, {
           text: newMessage,
           chatId: selectedChat._id
         });
+        selectedChat.lastMessage = { text: newMessage, type: "text", sender: { _id: id, username }, createdAt: responseMessage.data.createdAt };
       }
 
       // Refresh messages
@@ -197,6 +209,13 @@ export default function ChatPage() {
       setMessages(response.data);
       setNewMessage("");
       scrollToBottom();
+
+      setChats(prev => {
+        // move chat to the top of the list
+        prev = prev.filter(chat => chat.chatUser._id !== selectedChat.chatUser._id);
+        prev.unshift(selectedChat);
+        return prev;
+      });
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -227,7 +246,23 @@ export default function ChatPage() {
       messageId: message._id
     });
 
-    fetchMessages();
+    setMessages(prev => {
+      const newMessages = prev.filter(m => {
+        if (m._id === message._id) {
+          m.type = "handled_booking_request";
+        }
+        return m;
+      });
+      newMessages.push({
+        ...message,
+        sender: {
+          _id: id,
+          username
+        },
+        type: "booking_confirmation"
+      });
+      return newMessages;
+    });
   }
 
   const handleCancelBookingRequest = async (message) => {
@@ -235,7 +270,55 @@ export default function ChatPage() {
       messageId: message._id
     });
 
-    fetchMessages();
+    setMessages(prev => {
+      const newMessages = prev.filter(m => {
+        if (m._id === message._id) {
+          m.type = "handled_booking_request";
+        }
+        return m;
+      });
+      newMessages.push({
+        ...message,
+        sender: {
+          _id: id,
+          username
+        },
+        type: "booking_cancellation"
+      });
+      return newMessages;
+    });
+  }
+
+  const getTextFromMessageType = (message) => {
+    if (message.type === "booking_request" && message.sender._id === id) {
+      return "Запит на оренду надіслано. Очікуємо підтвердження 🕒";
+    }
+
+    if (message.type === "booking_request" && message.sender._id !== id) {
+      return "Новий запит на оренду 🕒";
+    }
+
+    if (message.type === "booking_confirmation" && message.sender._id === id) {
+      return "Ви підтвердили запит на оренду ✅";
+    }
+
+    if (message.type === "booking_confirmation" && message.sender._id !== id) {
+      return `${message.sender.username} підтвердив запит на оренду ✅`;
+    }
+
+    if (message.type === "booking_cancellation" && message.sender._id === id) {
+      return "Ви скасували запит на оренду ❌";
+    }
+
+    if (message.type === "booking_cancellation" && message.sender._id !== id) {
+      return `${message.sender.username} скасував запит на оренду ❌`;
+    }
+
+    if (message.type === "handled_booking_request") {
+      return "Запит на оренду оброблено 🕒";
+    }
+
+    return message.text;
   }
 
   if (loading) {
@@ -291,8 +374,9 @@ export default function ChatPage() {
                     )}
                     {!chat.draft &&
                       chat.lastMessage && (
+                        // todo: fix alignment of text and timestamp
                         <div className="flex justify-between items-center text-sm flex-grow">
-                          <p className="flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap min-w-0 truncate">{chat.lastMessage.text}</p>
+                          <p className="flex-1 overflow-hidden overflow-ellipsis whitespace-nowrap min-w-0 truncate">{getTextFromMessageType(chat.lastMessage)}</p>
                           <p className="text-xs text-gray-500 ml-2 min-w-[fit-content] whitespace-nowrap text-overflow-ellipsis flex-shrink-0 mr-1">
                             {new Date(chat.lastMessage.createdAt).toLocaleTimeString([], {
                               hour: '2-digit',
@@ -345,11 +429,11 @@ export default function ChatPage() {
                       : "bg-gray-100"
                       }`}
                   >
-                    {message.type === "booking_request" && (
+                    {(message.type === "booking_request" || message.type === "handled_booking_request") && (
                       <div className="flex flex-col mr-3">
-                        <p className="font-semibold">Запит на оренду надіслано. Очікуємо підтвердження 🕒</p>
+                        <p className="font-semibold">{getTextFromMessageType(message)}</p>
                         {message.booking && (
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-0.5 space-y-1">
                             <span className="text-sm">
                               {message.booking.game.name}
                             </span>
@@ -369,8 +453,8 @@ export default function ChatPage() {
                             </span>
                           </div>
                         )}
-                        {message.sender._id !== id && (
-                          <div className="flex gap-2 mt-2">
+                        {message.sender._id !== id && message.type !== "handled_booking_request" && (
+                          <div className="flex gap-2 mt-3">
                             <button
                               onClick={() => handleApproveBookingRequest(message)}
                               disabled={processingRequest}
@@ -391,13 +475,9 @@ export default function ChatPage() {
                     )}
                     {message.type === "booking_confirmation" && (
                       <div className="flex flex-col mr-3">
-                        <p className="font-semibold">
-                          {message.sender._id === id
-                            ? `${message.sender.username} підтвердив запит на оренду ✅`
-                            : "Ви підтвердили запит на оренду ✅"}
-                        </p>
+                        <p className="font-semibold">{getTextFromMessageType(message)}</p>
                         {message.booking && (
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-0.5 space-y-1">
                             <span className="text-sm">
                               {message.booking.game.name}
                             </span>
@@ -421,13 +501,9 @@ export default function ChatPage() {
                     )}
                     {message.type === "booking_cancellation" && (
                       <div className="flex flex-col">
-                        <p className="font-semibold">
-                          {message.sender._id === id
-                            ? `${message.sender.username} скасував запит на оренду ❌`
-                            : "Ви скасували запит на оренду ❌"}
-                        </p>
+                        <p className="font-semibold">{getTextFromMessageType(message)}</p>
                         {message.booking && (
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-0.5 space-y-1">
                             <span className="text-sm">
                               {message.booking.game.name}
                             </span>
